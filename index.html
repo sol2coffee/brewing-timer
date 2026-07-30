@@ -1385,7 +1385,7 @@
           endShort: "종료",
           userSettings: "사용자 설정",
           resetSettingsTitle: "설정값 초기화",
-          resetSettingsMessage: "기본 브루잉 레시피로 되돌릴까요?",
+          resetSettingsMessage: "설정값을 초기화하고 앱을 새로고침할까요?",
           recipeNameRequired: "레시피명을 입력해주세요.",
           overwriteTitle: "레시피 덮어쓰기",
           overwriteMessage: "같은 이름의 레시피가 있습니다. 현재 설정으로 덮어쓸까요?",
@@ -1495,7 +1495,7 @@
           endShort: "End",
           userSettings: "Custom Settings",
           resetSettingsTitle: "Reset Settings",
-          resetSettingsMessage: "Restore the default brewing recipe?",
+          resetSettingsMessage: "Reset settings and refresh the app?",
           recipeNameRequired: "Please enter a recipe name.",
           overwriteTitle: "Overwrite Recipe",
           overwriteMessage: "A recipe with the same name exists. Overwrite it with the current settings?",
@@ -1605,7 +1605,7 @@
           endShort: "结束",
           userSettings: "自定义设置",
           resetSettingsTitle: "重置设置",
-          resetSettingsMessage: "要恢复默认冲煮配方吗？",
+          resetSettingsMessage: "要重置设置并刷新应用吗？",
           recipeNameRequired: "请输入配方名称。",
           overwriteTitle: "覆盖配方",
           overwriteMessage: "已有同名配方。要用当前设置覆盖吗？",
@@ -1715,7 +1715,7 @@
           endShort: "終了",
           userSettings: "ユーザー設定",
           resetSettingsTitle: "設定をリセット",
-          resetSettingsMessage: "標準の抽出レシピに戻しますか？",
+          resetSettingsMessage: "設定をリセットしてアプリを再読み込みしますか？",
           recipeNameRequired: "レシピ名を入力してください。",
           overwriteTitle: "レシピを上書き",
           overwriteMessage: "同じ名前のレシピがあります。現在の設定で上書きしますか？",
@@ -3875,6 +3875,10 @@
         elements.languageSelect.value = language;
         applyTranslations();
         renderSetupScreen();
+        saveSettings();
+        window.setTimeout(function () {
+          window.location.reload();
+        }, 80);
       }
 
       function openModal(options) {
