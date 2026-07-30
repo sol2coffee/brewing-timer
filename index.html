@@ -1,0 +1,4016 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#6f4e37">
+  <title>BREWING TIMER</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page-bg: #f4f6f1;
+      --surface: #ffffff;
+      --surface-strong: #ffffff;
+      --text: #1f2420;
+      --muted: #657066;
+      --line: rgba(34, 45, 38, 0.15);
+      --accent: #6f4e37;
+      --accent-strong: #3f342c;
+      --accent-soft: #dfe7df;
+      --danger: #b34034;
+      --danger-soft: #ffe4df;
+      --success: #2f6b54;
+      --shadow: 0 18px 48px rgba(35, 48, 39, 0.1);
+      --radius: 8px;
+      --focus: 0 0 0 3px rgba(97, 131, 160, 0.42);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-width: 320px;
+      background: var(--page-bg);
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0)),
+        var(--page-bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+      -webkit-tap-highlight-color: rgba(111, 78, 55, 0.12);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+      letter-spacing: 0;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 46px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-strong);
+      color: var(--text);
+      font-size: 16px;
+      outline: none;
+    }
+
+    input {
+      padding: 11px 12px;
+    }
+
+    select {
+      padding: 11px 36px 11px 12px;
+    }
+
+    input:focus,
+    select:focus,
+    button:focus-visible {
+      box-shadow: var(--focus);
+      outline: none;
+    }
+
+    input[aria-invalid="true"] {
+      border-color: var(--danger);
+      background: var(--danger-soft);
+    }
+
+    .app {
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .setup-screen {
+      width: min(100%, 760px);
+      margin: 0 auto;
+      padding: calc(18px + env(safe-area-inset-top)) 16px calc(112px + env(safe-area-inset-bottom));
+    }
+
+    .setup-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 10px 2px 16px;
+    }
+
+    .kicker {
+      margin: 0;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+    }
+
+    h1 {
+      margin: 4px 0 5px;
+      font-size: clamp(29px, 9vw, 46px);
+      line-height: 0.98;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .status-note {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      margin: 0 0 16px;
+      padding: 11px 12px;
+      border: 1px solid rgba(47, 107, 84, 0.18);
+      border-radius: 8px;
+      background: rgba(47, 107, 84, 0.08);
+      color: #264d40;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .language-card {
+      display: grid;
+      grid-template-columns: auto minmax(128px, 1fr);
+      gap: 10px;
+      align-items: center;
+      margin: 0 0 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.62);
+    }
+
+    .language-card label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .status-dot {
+      flex: 0 0 auto;
+      width: 8px;
+      height: 8px;
+      margin-top: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .recipe-panel {
+      display: grid;
+      gap: 0;
+    }
+
+    .section-title {
+      margin: 0 0 11px;
+      color: var(--accent-strong);
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .preset-card,
+    .end-time-card {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 15px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-strong);
+    }
+
+    .preset-grid {
+      display: grid;
+      grid-template-columns: 0.72fr 1fr;
+      gap: 10px;
+    }
+
+    .preset-summary,
+    .recipe-note,
+    .timer-prep-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .recipe-note {
+      margin-bottom: 15px;
+      padding: 11px 12px;
+      border: 1px solid rgba(47, 107, 84, 0.18);
+      border-radius: 8px;
+      background: rgba(47, 107, 84, 0.08);
+      color: #264d40;
+      font-weight: 750;
+    }
+
+    .preset-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .custom-preset-area {
+      display: grid;
+      gap: 10px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+
+    .recipe-import-area {
+      display: grid;
+      gap: 8px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+
+    .import-status {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .import-status.success {
+      color: var(--success);
+      font-weight: 750;
+    }
+
+    .import-status.error {
+      color: var(--danger);
+      font-weight: 750;
+    }
+
+    .custom-preset-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .time-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .colon {
+      align-self: center;
+      padding-top: 26px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .field-unit {
+      position: relative;
+    }
+
+    .field-unit input {
+      padding-right: 42px;
+    }
+
+    .field-unit span {
+      position: absolute;
+      right: 12px;
+      bottom: 13px;
+      color: var(--muted);
+      font-size: 13px;
+      pointer-events: none;
+    }
+
+    .stage-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .stage-card {
+      display: grid;
+      gap: 13px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-strong);
+    }
+
+    .stage-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .stage-title {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .stage-grid {
+      display: grid;
+      gap: 11px;
+    }
+
+    .stage-time-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .stage-number-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .computed {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 11px;
+      border-radius: 8px;
+      background: #edf0ea;
+      color: #303a31;
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .stage-error,
+    .global-error {
+      display: none;
+      color: var(--danger);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .stage-error.visible,
+    .global-error.visible {
+      display: block;
+    }
+
+    .global-error {
+      margin: 0 0 12px;
+      padding: 12px;
+      border: 1px solid rgba(179, 64, 52, 0.2);
+      border-radius: 8px;
+      background: var(--danger-soft);
+      font-weight: 700;
+    }
+
+    .settings-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 50px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-strong);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .toggle input {
+      width: 22px;
+      min-height: 22px;
+      accent-color: var(--accent);
+    }
+
+    .debug-panel {
+      display: grid;
+      gap: 8px;
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px dashed rgba(111, 78, 55, 0.36);
+      border-radius: 8px;
+      background: rgba(234, 217, 202, 0.42);
+    }
+
+    .debug-panel label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .creator-footer {
+      display: grid;
+      gap: 10px;
+      justify-items: center;
+      padding: 18px 4px 4px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .creator-footer p {
+      margin: 0;
+    }
+
+    .social-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .social-link {
+      display: inline-grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.68);
+      color: var(--accent-strong);
+      text-decoration: none;
+    }
+
+    .social-link svg {
+      width: 21px;
+      height: 21px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .social-link.youtube svg {
+      width: 23px;
+      height: 23px;
+      fill: currentColor;
+      stroke: none;
+    }
+
+    .social-link:focus-visible {
+      box-shadow: var(--focus);
+      outline: none;
+    }
+
+    .bottom-bar {
+      position: fixed;
+      z-index: 20;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+      border-top: 1px solid rgba(62, 42, 32, 0.12);
+      background: rgba(244, 246, 241, 0.9);
+      backdrop-filter: blur(18px);
+    }
+
+    .bottom-inner {
+      display: grid;
+      grid-template-columns: minmax(112px, 0.65fr) 1fr;
+      gap: 10px;
+      width: min(100%, 760px);
+      margin: 0 auto;
+    }
+
+    .btn {
+      min-height: 46px;
+      border-radius: 8px;
+      padding: 12px 14px;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      font-size: 15px;
+      font-weight: 850;
+    }
+
+    .btn.primary {
+      min-height: 56px;
+      background: var(--accent);
+      color: #fffdf8;
+      font-size: 18px;
+      box-shadow: 0 14px 26px rgba(111, 78, 55, 0.26);
+    }
+
+    .btn.secondary {
+      background: #e4eae2;
+      color: #28352c;
+    }
+
+    .btn.danger {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .btn.icon {
+      display: inline-grid;
+      place-items: center;
+      width: 46px;
+      min-height: 46px;
+      padding: 0;
+      border-radius: 50%;
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .timer-screen {
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: calc(18px + env(safe-area-inset-top)) 16px calc(12px + env(safe-area-inset-bottom));
+      background: var(--timer-bg, #6f4e37);
+      color: var(--timer-fg, #fffaf3);
+      transition: background-color 420ms ease, color 240ms ease;
+    }
+
+    .timer-shell {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: clamp(10px, 2.2vh, 18px);
+      width: min(100%, 760px);
+      min-height: calc(100vh - 30px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      min-height: calc(100dvh - 30px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      margin: 0 auto;
+    }
+
+    .timer-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      min-height: 44px;
+    }
+
+    .timer-brand {
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      opacity: 0.88;
+    }
+
+    .state-badge {
+      min-height: 34px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .timer-main {
+      display: grid;
+      align-content: start;
+      gap: clamp(14px, 3.2vh, 28px);
+      padding-top: clamp(10px, 3.2vh, 34px);
+      text-align: center;
+    }
+
+    .timer-message {
+      margin: 0 auto;
+      max-width: 11ch;
+      font-size: clamp(44px, 15vw, 84px);
+      font-weight: 900;
+      line-height: 1.03;
+      letter-spacing: 0;
+      text-wrap: balance;
+    }
+
+    .timer-message.long-message {
+      max-width: 14ch;
+      font-size: clamp(34px, 10.5vw, 66px);
+      line-height: 1.1;
+    }
+
+    .timer-prep-note {
+      width: min(100%, 520px);
+      margin: 12px auto 0;
+      color: inherit;
+      font-size: clamp(15px, 3.8vw, 20px);
+      font-weight: 800;
+      opacity: 0.86;
+    }
+
+    .timer-countdown {
+      min-height: 1.1em;
+      font-size: clamp(54px, 19vw, 104px);
+      font-weight: 900;
+      line-height: 0.9;
+    }
+
+    .timer-countdown:empty {
+      min-height: 0;
+    }
+
+    .time-display {
+      display: grid;
+      gap: 6px;
+    }
+
+    .elapsed-time {
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(56px, 16vw, 112px);
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .end-time {
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(17px, 3.8vw, 24px);
+      font-weight: 800;
+      opacity: 0.82;
+    }
+
+    .timer-info {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      text-align: left;
+    }
+
+    .info-item {
+      min-height: 58px;
+      padding: 10px 11px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.13);
+    }
+
+    .info-label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 11px;
+      font-weight: 850;
+      opacity: 0.76;
+    }
+
+    .info-value {
+      display: block;
+      font-size: 16px;
+      font-weight: 850;
+      line-height: 1.2;
+    }
+
+    .progress-track {
+      overflow: hidden;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.22);
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: currentColor;
+      opacity: 0.82;
+      transition: width 120ms linear;
+    }
+
+    .timer-controls {
+      display: grid;
+      gap: 10px;
+    }
+
+    .timer-screen .creator-footer {
+      gap: 6px;
+      padding: 0 4px;
+      color: inherit;
+      font-size: 11px;
+      line-height: 1.2;
+      opacity: 0.72;
+    }
+
+    .timer-screen .social-link {
+      border-color: rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.12);
+      color: inherit;
+    }
+
+    .timer-screen .social-link {
+      width: 34px;
+      height: 34px;
+    }
+
+    .timer-screen .social-link svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .timer-screen .social-link.youtube svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .timer-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .timer-screen .btn {
+      background: rgba(255, 255, 255, 0.16);
+      color: inherit;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .timer-screen .btn.primary {
+      background: rgba(255, 255, 255, 0.92);
+      color: #35251e;
+      box-shadow: none;
+    }
+
+    .timer-screen .btn.danger {
+      background: rgba(255, 255, 255, 0.12);
+      color: inherit;
+    }
+
+    .finished-actions {
+      display: none;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .timer-screen.is-finished .running-actions {
+      display: none;
+    }
+
+    .timer-screen.is-finished .finished-actions {
+      display: grid;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      z-index: 80;
+      inset: 0;
+      display: none;
+      place-items: end center;
+      padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
+      background: rgba(21, 15, 12, 0.42);
+    }
+
+    .modal-backdrop.open {
+      display: grid;
+    }
+
+    .modal {
+      width: min(100%, 420px);
+      padding: 18px;
+      border-radius: 8px;
+      background: var(--surface-strong);
+      color: var(--text);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+    }
+
+    .modal h2 {
+      margin: 0 0 8px;
+      font-size: 21px;
+    }
+
+    .modal p {
+      margin: 0 0 16px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (min-width: 680px) {
+      .setup-screen {
+        padding-top: calc(28px + env(safe-area-inset-top));
+      }
+
+      .stage-grid {
+        grid-template-columns: 1.05fr 1fr;
+        align-items: start;
+      }
+
+      .timer-actions,
+      .finished-actions {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .modal-backdrop {
+        place-items: center;
+      }
+    }
+
+    @media (max-width: 370px) {
+      .setup-screen {
+        padding-inline: 12px;
+      }
+
+      .stage-card,
+      .end-time-card {
+        padding: 12px;
+      }
+
+      .settings-row {
+        grid-template-columns: 1fr;
+      }
+
+      .preset-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .custom-preset-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .preset-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .timer-info {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .timer-message {
+        font-size: clamp(38px, 13vw, 48px);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <main id="setupScreen" class="setup-screen" aria-labelledby="appTitle">
+      <header class="setup-header">
+        <div>
+          <p class="kicker">MOBILE POUR OVER</p>
+          <h1 id="appTitle">BREWING TIMER</h1>
+          <p class="subtitle" data-i18n="subtitle">나만의 푸어링 레시피를 설정하세요</p>
+        </div>
+        <button id="resetSettingsButton" class="btn icon danger" type="button" aria-label="설정값 초기화" data-i18n-aria-label="resetSettingsLabel">↺</button>
+      </header>
+
+      <p class="status-note">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="wakeLockHint">정확한 타이머 사용을 위해 추출 중에는 화면을 켜두세요.</span>
+      </p>
+
+      <section class="recipe-panel" aria-label="브루잉 레시피 설정" data-i18n-aria-label="setupAria">
+        <p id="globalError" class="global-error" role="alert"></p>
+
+        <div class="preset-card">
+          <h2 class="section-title" data-i18n="savedRecipesTitle">저장된 레시피</h2>
+          <div class="preset-grid">
+            <div class="field">
+              <label for="presetCategory" data-i18n="categoryLabel">소분류</label>
+              <select id="presetCategory"></select>
+            </div>
+            <div class="field">
+              <label for="presetRecipe" data-i18n="recipeLabel">레시피</label>
+              <select id="presetRecipe"></select>
+            </div>
+          </div>
+          <p id="presetSummary" class="preset-summary" aria-live="polite"></p>
+          <div class="preset-actions">
+            <button id="applyPresetButton" class="btn secondary" type="button" data-i18n="applyRecipe">레시피 적용</button>
+            <button id="deleteCustomPresetButton" class="btn danger" type="button" disabled data-i18n="deleteRecipe">선택 레시피 삭제</button>
+          </div>
+          <div class="recipe-import-area">
+            <button id="importRecipeButton" class="btn secondary" type="button" data-i18n="importRecipe">TXT 레시피 가져오기</button>
+            <input id="recipeImportFile" class="sr-only" type="file" accept=".txt,text/plain">
+            <p id="importStatus" class="import-status" aria-live="polite"></p>
+          </div>
+          <div class="custom-preset-area">
+            <div class="field">
+              <label for="customPresetCategory" data-i18n="recipeCategoryLabel">레시피 분류</label>
+              <select id="customPresetCategory">
+                <option value="hot">HOT</option>
+                <option value="ice">ICE</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="customPresetName" data-i18n="recipeNameLabel">레시피명</label>
+              <input id="customPresetName" type="text" maxlength="28" autocomplete="off" placeholder="예: 내 원두 산미용" data-i18n-placeholder="recipeNamePlaceholder">
+            </div>
+            <div class="field">
+              <label for="customPresetNote" data-i18n="prepNoteLabel">원두량 및 사전준비사항</label>
+              <input id="customPresetNote" type="text" maxlength="240" autocomplete="off" placeholder="예: 원두 20g / 서버에 얼음 100g을 먼저 넣고 시작하세요" data-i18n-placeholder="prepNotePlaceholder">
+            </div>
+            <div class="custom-preset-actions">
+              <button id="saveCustomPresetButton" class="btn secondary" type="button" data-i18n="saveCurrentSettings">현재 설정 저장</button>
+            </div>
+          </div>
+        </div>
+
+        <p id="recipeNote" class="recipe-note hidden" aria-live="polite"></p>
+
+        <div class="end-time-card">
+          <h2 class="section-title" data-i18n="endTimeTitle">전체 추출 종료시간</h2>
+          <div class="time-row">
+            <div class="field">
+              <label for="endMinutes" data-i18n="minuteLabel">분</label>
+              <select id="endMinutes"></select>
+            </div>
+            <span class="colon" aria-hidden="true">:</span>
+            <div class="field">
+              <label for="endSeconds" data-i18n="secondLabel">초</label>
+              <select id="endSeconds"></select>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="section-title" data-i18n="pouringStagesTitle">푸어링 차수</h2>
+        <div id="stageList" class="stage-list"></div>
+
+        <div class="settings-row" aria-label="알림 설정" data-i18n-aria-label="notificationSettingsAria">
+          <label class="toggle" for="soundEnabled">
+            <span data-i18n="soundLabel">알림음</span>
+            <input id="soundEnabled" type="checkbox">
+          </label>
+          <label class="toggle" for="vibrationEnabled">
+            <span data-i18n="vibrationLabel">진동</span>
+            <input id="vibrationEnabled" type="checkbox">
+          </label>
+        </div>
+
+        <div id="debugPanel" class="debug-panel hidden">
+          <label for="speedSelect" data-i18n="debugSpeedLabel">테스트 배속</label>
+          <select id="speedSelect">
+            <option value="1" data-i18n="speed1">1배</option>
+            <option value="5" data-i18n="speed5">5배</option>
+            <option value="10" data-i18n="speed10">10배</option>
+          </select>
+        </div>
+      </section>
+
+      <div class="language-card">
+        <label for="languageSelect" data-i18n="languageLabel">언어</label>
+        <select id="languageSelect">
+          <option value="ko">한국어</option>
+          <option value="en">English</option>
+          <option value="zh">中文</option>
+          <option value="ja">日本語</option>
+        </select>
+      </div>
+
+      <footer class="creator-footer" aria-label="제작자 정보" data-i18n-aria-label="creatorInfoAria">
+        <p>© 2026 sol2coffee</p>
+        <nav class="social-links" aria-label="sol2coffee 바로가기" data-i18n-aria-label="solLinksAria">
+          <a class="social-link instagram" href="https://www.instagram.com/sol2coffee/" target="_blank" rel="noopener noreferrer" aria-label="sol2coffee Instagram 바로가기" data-i18n-aria-label="instagramAria">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <rect x="4" y="4" width="16" height="16" rx="5"></rect>
+              <circle cx="12" cy="12" r="3.6"></circle>
+              <circle cx="17.3" cy="6.8" r="0.7"></circle>
+            </svg>
+          </a>
+          <a class="social-link youtube" href="https://www.youtube.com/@sol2coffee" target="_blank" rel="noopener noreferrer" aria-label="sol2coffee YouTube 바로가기" data-i18n-aria-label="youtubeAria">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M21.4 7.1c-.2-.9-.9-1.5-1.7-1.7C18.2 5 12 5 12 5s-6.2 0-7.7.4c-.8.2-1.5.9-1.7 1.7C2.2 8.7 2.2 12 2.2 12s0 3.3.4 4.9c.2.9.9 1.5 1.7 1.7 1.5.4 7.7.4 7.7.4s6.2 0 7.7-.4c.8-.2 1.5-.9 1.7-1.7.4-1.6.4-4.9.4-4.9s0-3.3-.4-4.9zM10.1 14.9V9.1l5.1 2.9-5.1 2.9z"></path>
+            </svg>
+          </a>
+        </nav>
+      </footer>
+    </main>
+
+    <div id="setupBottomBar" class="bottom-bar">
+      <div class="bottom-inner">
+        <button id="addStageButton" class="btn secondary" type="button" data-i18n="addStage">차수 추가</button>
+        <button id="startButton" class="btn primary" type="button">START</button>
+      </div>
+    </div>
+
+    <section id="timerScreen" class="timer-screen hidden" aria-label="브루잉 타이머 실행 화면" data-i18n-aria-label="timerScreenAria">
+      <div class="timer-shell">
+        <header class="timer-top">
+          <span class="timer-brand">BREWING TIMER</span>
+          <span id="timerStateBadge" class="state-badge">실행 중</span>
+        </header>
+
+        <main class="timer-main">
+          <div>
+            <p id="timerMessage" class="timer-message" aria-live="polite">추출을 준비해주세요</p>
+            <p id="timerPrepNote" class="timer-prep-note hidden" aria-live="polite"></p>
+            <div id="countdownText" class="timer-countdown" aria-live="polite"></div>
+          </div>
+
+          <div class="time-display" aria-label="경과 시간" data-i18n-aria-label="elapsedTimeAria">
+            <span id="elapsedTimeText" class="elapsed-time">00:00</span>
+            <span id="totalTimeText" class="end-time">/ 02:10</span>
+          </div>
+
+          <div id="timerInfo" class="timer-info">
+            <div class="info-item">
+              <span class="info-label" data-i18n="currentStageLabel">현재 차수</span>
+              <span id="currentStageInfo" class="info-value">준비</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label" data-i18n="currentPouringLabel">이번 푸어링</span>
+              <span id="currentAmountInfo" class="info-value">0g</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label" data-i18n="cumulativeLabel">누적</span>
+              <span id="cumulativeAmountInfo" class="info-value">0g</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label" data-i18n="nextPouringLabel">다음 푸어링까지</span>
+              <span id="nextStageInfo" class="info-value">--:--</span>
+            </div>
+          </div>
+
+          <div class="progress-track" aria-label="전체 진행률" data-i18n-aria-label="progressAria">
+            <div id="progressBar" class="progress-bar"></div>
+          </div>
+        </main>
+
+        <footer class="timer-controls">
+          <div class="running-actions timer-actions">
+            <button id="pauseButton" class="btn primary" type="button">일시정지</button>
+            <button id="resetTimerButton" class="btn danger" type="button" data-i18n="reset">초기화</button>
+          </div>
+          <div class="finished-actions">
+            <button id="restartSameRecipeButton" class="btn primary" type="button" data-i18n="restartSameRecipe">같은 레시피로 다시 시작</button>
+            <button id="backToSetupButton" class="btn" type="button" data-i18n="backToSetup">설정 화면으로</button>
+          </div>
+          <div class="creator-footer" aria-label="제작자 정보" data-i18n-aria-label="creatorInfoAria">
+            <p>© 2026 sol2coffee</p>
+            <nav class="social-links" aria-label="sol2coffee 바로가기" data-i18n-aria-label="solLinksAria">
+              <a class="social-link instagram" href="https://www.instagram.com/sol2coffee/" target="_blank" rel="noopener noreferrer" aria-label="sol2coffee Instagram 바로가기" data-i18n-aria-label="instagramAria">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <rect x="4" y="4" width="16" height="16" rx="5"></rect>
+                  <circle cx="12" cy="12" r="3.6"></circle>
+                  <circle cx="17.3" cy="6.8" r="0.7"></circle>
+                </svg>
+              </a>
+              <a class="social-link youtube" href="https://www.youtube.com/@sol2coffee" target="_blank" rel="noopener noreferrer" aria-label="sol2coffee YouTube 바로가기" data-i18n-aria-label="youtubeAria">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M21.4 7.1c-.2-.9-.9-1.5-1.7-1.7C18.2 5 12 5 12 5s-6.2 0-7.7.4c-.8.2-1.5.9-1.7 1.7C2.2 8.7 2.2 12 2.2 12s0 3.3.4 4.9c.2.9.9 1.5 1.7 1.7 1.5.4 7.7.4 7.7.4s6.2 0 7.7-.4c.8-.2 1.5-.9 1.7-1.7.4-1.6.4-4.9.4-4.9s0-3.3-.4-4.9zM10.1 14.9V9.1l5.1 2.9-5.1 2.9z"></path>
+                </svg>
+              </a>
+            </nav>
+          </div>
+        </footer>
+      </div>
+    </section>
+  </div>
+
+  <div id="modalBackdrop" class="modal-backdrop" role="presentation">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalMessage">
+      <h2 id="modalTitle">확인</h2>
+      <p id="modalMessage">계속 진행할까요?</p>
+      <div class="modal-actions">
+        <button id="modalCancelButton" class="btn secondary" type="button">취소</button>
+        <button id="modalConfirmButton" class="btn danger" type="button">확인</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var STORAGE_KEY = "brewingTimerSettings.v2";
+      var LEGACY_STORAGE_KEY = "brewingTimerSettings.v1";
+      var CUSTOM_PRESETS_STORAGE_KEY = "brewingTimerCustomPresets.v1";
+      var SETTINGS_VERSION = 2;
+      var DEBUG_MODE = false;
+      var MAX_STAGES = 10;
+      var MIN_STAGES = 1;
+      var FINISH_WARNING_SECONDS = 5;
+      var TIME_SELECTOR_MAX_MINUTES = 59;
+      var DEFAULT_SETTINGS = {
+        version: SETTINGS_VERSION,
+        extractionEndSeconds: 0,
+        stages: [
+          { startSeconds: 0, amountGrams: 0 },
+          { startSeconds: 0, amountGrams: 0 },
+          { startSeconds: 0, amountGrams: 0 },
+          { startSeconds: 0, amountGrams: 0 }
+        ],
+        soundEnabled: true,
+        vibrationEnabled: true,
+        language: "ko",
+        presetName: "사용자 설정",
+        prepNote: ""
+      };
+
+      var RECIPE_PRESETS = [
+        {
+          id: "hot",
+          label: "HOT",
+          recipes: [
+            {
+              id: "built-in-hot-clean-acidity",
+              name: "깔끔 산미 (앱개발자 추천)",
+              prepNote: "원두 20g, 분쇄도 코만단테 C40 28클릭, 물온도 92도",
+              extractionEndSeconds: 130,
+              stages: [
+                { startSeconds: 0, amountGrams: 70 },
+                { startSeconds: 30, amountGrams: 70 },
+                { startSeconds: 60, amountGrams: 80 },
+                { startSeconds: 90, amountGrams: 80 }
+              ]
+            },
+            {
+              id: "built-in-hot-strong-sweetness",
+              name: "짱짱한 단맛 (앱개발자 추천)",
+              prepNote: "원두 20g, 분쇄도 코만단테 C40 28클릭, 물온도 92도",
+              extractionEndSeconds: 150,
+              stages: [
+                { startSeconds: 0, amountGrams: 60 },
+                { startSeconds: 30, amountGrams: 60 },
+                { startSeconds: 60, amountGrams: 60 },
+                { startSeconds: 90, amountGrams: 60 },
+                { startSeconds: 120, amountGrams: 60 }
+              ]
+            },
+            {
+              id: "built-in-hot-anstar-6888",
+              name: "안스타 6888",
+              prepNote: "원두 20g",
+              extractionEndSeconds: 140,
+              stages: [
+                { startSeconds: 0, amountGrams: 60 },
+                { startSeconds: 30, amountGrams: 80 },
+                { startSeconds: 60, amountGrams: 80 },
+                { startSeconds: 90, amountGrams: 80 }
+              ]
+            },
+            {
+              id: "built-in-hot-jeong-484",
+              name: "정인성 484",
+              prepNote: "원두 20g",
+              extractionEndSeconds: 160,
+              stages: [
+                { startSeconds: 0, amountGrams: 40 },
+                { startSeconds: 60, amountGrams: 80 },
+                { startSeconds: 120, amountGrams: 40 }
+              ]
+            },
+            {
+              id: "built-in-hot-jeong-4666",
+              name: "정인성 4666",
+              prepNote: "원두 20g",
+              extractionEndSeconds: 140,
+              stages: [
+                { startSeconds: 0, amountGrams: 40 },
+                { startSeconds: 30, amountGrams: 60 },
+                { startSeconds: 60, amountGrams: 60 },
+                { startSeconds: 90, amountGrams: 60 }
+              ]
+            },
+            {
+              id: "built-in-hot-tetsu-katsuya-ten-pour",
+              name: "테츠 카츠야 텐푸어",
+              prepNote: "원두 20g, 분쇄도 코만단테 C40 40-45클릭, 물온도 95도",
+              extractionEndSeconds: 210,
+              stages: [
+                { startSeconds: 0, amountGrams: 30 },
+                { startSeconds: 30, amountGrams: 30 },
+                { startSeconds: 45, amountGrams: 30 },
+                { startSeconds: 60, amountGrams: 30 },
+                { startSeconds: 75, amountGrams: 30 },
+                { startSeconds: 90, amountGrams: 30 },
+                { startSeconds: 105, amountGrams: 30 },
+                { startSeconds: 120, amountGrams: 30 },
+                { startSeconds: 135, amountGrams: 30 },
+                { startSeconds: 150, amountGrams: 30 }
+              ]
+            },
+            {
+              id: "built-in-hot-anstar-10g",
+              name: "안스타 10g",
+              prepNote: "원두 10g, 분쇄도 850-850마이크론, V60, 물온도 96도",
+              extractionEndSeconds: 180,
+              stages: [
+                { startSeconds: 0, amountGrams: 30 },
+                { startSeconds: 30, amountGrams: 40 },
+                { startSeconds: 60, amountGrams: 40 },
+                { startSeconds: 90, amountGrams: 40 }
+              ]
+            }
+          ]
+        },
+        {
+          id: "ice",
+          label: "ICE",
+          recipes: [
+            {
+              id: "built-in-ice-clean-acidity",
+              name: "깔끔 산미 (앱개발자 추천)",
+              prepNote: "원두 20g, 분쇄도 코만단테 C40 28클릭, 물온도 92도, 추출전 서버에 얼음 가득, 추출후 스월링 열바퀴 후 새 얼음컵에 따라주기",
+              extractionEndSeconds: 140,
+              stages: [
+                { startSeconds: 0, amountGrams: 50 },
+                { startSeconds: 30, amountGrams: 50 },
+                { startSeconds: 60, amountGrams: 50 },
+                { startSeconds: 90, amountGrams: 50 }
+              ]
+            },
+            {
+              id: "built-in-ice-strong-sweetness",
+              name: "짱짱한 단맛 (앱개발자 추천)",
+              prepNote: "원두 20g, 분쇄도 코만단테 C40 28클릭, 물온도 92도, 추출전 서버에 얼음 가득, 추출후 스월링 열바퀴 후 새 얼음컵에 따라주기",
+              extractionEndSeconds: 140,
+              stages: [
+                { startSeconds: 0, amountGrams: 40 },
+                { startSeconds: 30, amountGrams: 60 },
+                { startSeconds: 60, amountGrams: 50 },
+                { startSeconds: 90, amountGrams: 50 }
+              ]
+            },
+            {
+              id: "built-in-ice-first-meeting-beans",
+              name: "첫만남 원두 레시피 (앱개발자 추천)",
+              prepNote: "원두 20g, 분쇄도 코만단테 C40 25클릭, 물온도 92도, 추출전 서버에 얼음 가득, 추출후 스월링 열바퀴 후 새 얼음컵에 따라주기",
+              extractionEndSeconds: 140,
+              stages: [
+                { startSeconds: 0, amountGrams: 40 },
+                { startSeconds: 30, amountGrams: 50 },
+                { startSeconds: 60, amountGrams: 60 },
+                { startSeconds: 90, amountGrams: 50 }
+              ]
+            },
+            {
+              id: "built-in-ice-anstar-10g",
+              name: "안스타 10g",
+              prepNote: "원두 10g, 분쇄도 850-850마이크론, V60, 물온도 96도, 얼음을 담아둔컵에 커피 따르기",
+              extractionEndSeconds: 120,
+              stages: [
+                { startSeconds: 0, amountGrams: 20 },
+                { startSeconds: 30, amountGrams: 30 },
+                { startSeconds: 60, amountGrams: 30 },
+                { startSeconds: 90, amountGrams: 20 }
+              ]
+            }
+          ]
+        }
+      ];
+
+      var TRANSLATIONS = {
+        ko: {
+          languageLabel: "언어",
+          subtitle: "나만의 푸어링 레시피를 설정하세요",
+          resetSettingsLabel: "설정값 초기화",
+          wakeKeepScreen: "정확한 타이머 사용을 위해 추출 중에는 화면을 켜두세요.",
+          wakeActive: "추출 중 화면 꺼짐 방지가 활성화되었습니다.",
+          wakeAfterStart: "START 후 지원 브라우저에서는 화면 꺼짐 방지를 요청합니다.",
+          setupAria: "브루잉 레시피 설정",
+          savedRecipesTitle: "저장된 레시피",
+          categoryLabel: "소분류",
+          recipeLabel: "레시피",
+          applyRecipe: "레시피 적용",
+          deleteRecipe: "선택 레시피 삭제",
+          recipeCategoryLabel: "레시피 분류",
+          recipeNameLabel: "레시피명",
+          recipeNamePlaceholder: "예: 내 원두 산미용",
+          prepNoteLabel: "원두량 및 사전준비사항",
+          prepNotePlaceholder: "예: 원두 20g / 서버에 얼음 100g을 먼저 넣고 시작하세요",
+          saveCurrentSettings: "현재 설정 저장",
+          importRecipe: "TXT 레시피 가져오기",
+          importRecipeSuccess: "{name} 레시피를 저장하고 현재 설정에 적용했습니다.",
+          importRecipeOverwrite: "{name} 레시피를 덮어쓰고 현재 설정에 적용했습니다.",
+          importRecipeBatchSuccess: "{count}개 레시피를 저장했습니다. 첫 번째 레시피를 현재 설정에 적용했습니다.",
+          importRecipeReadError: "TXT 파일을 읽지 못했습니다.",
+          importRecipeTooLarge: "64KB 이하의 TXT 파일만 가져올 수 있습니다.",
+          importRecipeEmpty: "TXT 파일에 레시피 내용이 없습니다.",
+          importRecipeStageMissing: "푸어링 물양을 찾지 못했습니다. 예: 물양: 60/80/80/80",
+          importRecipeStageLimit: "TXT 레시피는 차수 {max}개까지만 가져올 수 있습니다.",
+          importRecipeTimeMismatch: "시작시간 개수와 물양 개수가 맞지 않습니다.",
+          importRecipeInvalidTime: "TXT 파일의 시간 형식을 읽지 못했습니다.",
+          importRecipeInvalidAmount: "TXT 파일의 물양은 0보다 큰 숫자로 입력해주세요.",
+          importRecipeEndBeforeStages: "종료시간은 마지막 차수 시작시간보다 뒤여야 합니다.",
+          importedRecipeFallbackName: "가져온 레시피",
+          endTimeTitle: "전체 추출 종료시간",
+          minuteLabel: "분",
+          secondLabel: "초",
+          pouringStagesTitle: "푸어링 차수",
+          notificationSettingsAria: "알림 설정",
+          soundLabel: "알림음",
+          vibrationLabel: "진동",
+          debugSpeedLabel: "테스트 배속",
+          speed1: "1배",
+          speed5: "5배",
+          speed10: "10배",
+          creatorInfoAria: "제작자 정보",
+          solLinksAria: "sol2coffee 바로가기",
+          instagramAria: "sol2coffee Instagram 바로가기",
+          youtubeAria: "sol2coffee YouTube 바로가기",
+          addStage: "차수 추가",
+          timerScreenAria: "브루잉 타이머 실행 화면",
+          running: "실행 중",
+          paused: "일시정지됨",
+          finishedState: "완료",
+          prepare: "추출을 준비해주세요",
+          elapsedTimeAria: "경과 시간",
+          currentStageLabel: "현재 차수",
+          currentPouringLabel: "이번 푸어링",
+          cumulativeLabel: "누적",
+          nextPouringLabel: "다음 푸어링까지",
+          progressAria: "전체 진행률",
+          pause: "일시정지",
+          continue: "계속",
+          reset: "초기화",
+          restartSameRecipe: "같은 레시피로 다시 시작",
+          backToSetup: "설정 화면으로",
+          confirmTitle: "확인",
+          confirmMessage: "계속 진행할까요?",
+          cancel: "취소",
+          confirm: "확인",
+          savedRecipeNone: "저장된 레시피 없음",
+          savedRecipeHint: "현재 레시피를 저장하면 이 목록에 표시됩니다.",
+          customPrefix: "나만의",
+          endShort: "종료",
+          userSettings: "사용자 설정",
+          resetSettingsTitle: "설정값 초기화",
+          resetSettingsMessage: "기본 브루잉 레시피로 되돌릴까요?",
+          recipeNameRequired: "레시피명을 입력해주세요.",
+          overwriteTitle: "레시피 덮어쓰기",
+          overwriteMessage: "같은 이름의 레시피가 있습니다. 현재 설정으로 덮어쓸까요?",
+          overwriteConfirm: "덮어쓰기",
+          deleteRecipeTitle: "레시피 삭제",
+          deleteRecipeMessage: "{name} 레시피를 삭제할까요? 현재 입력값은 유지됩니다.",
+          deleteConfirm: "삭제",
+          saveStorageError: "브라우저 저장 공간을 사용할 수 없어 레시피를 저장하지 못했습니다.",
+          stageName: "{number}차",
+          stageDeleteAria: "{stage} 삭제",
+          startMinute: "시작 분",
+          startSecond: "시작 초",
+          pouringAmount: "푸어링 물양",
+          currentPouringAmount: "이번 푸어링 {amount}",
+          cumulativeAmount: "누적 {amount}",
+          minStagesError: "차수는 최소 1개 이상이어야 합니다.",
+          maxStagesError: "차수는 최대 10개까지만 사용할 수 있습니다.",
+          endTimeInvalid: "전체 추출 종료시간은 분과 0~59초로 입력해주세요.",
+          endTimeMin: "전체 추출 종료시간은 최소 5초 이상이어야 합니다.",
+          stageStartInvalid: "{stage} 시작 시각은 분과 0~59초로 입력해주세요.",
+          stageStartNonNegative: "{stage} 시작 시각은 0초 이상이어야 합니다.",
+          stageStartLater: "{stage} 시작 시각은 {previousStage} 시작 시각보다 늦어야 합니다.",
+          stageAmountInvalid: "{stage} 푸어링 물양은 0보다 큰 숫자로 입력해주세요.",
+          endAfterLast: "전체 추출 종료시간은 마지막 차수 시작 시각보다 뒤여야 합니다.",
+          readyUntil: "{stage} 푸어링까지 {time}",
+          pourMessage: "{stage} {amount}을 부어주세요",
+          lastStage: "마지막 차수",
+          finishWarning: "추출이 종료되면 드리퍼를 제거해주세요",
+          finishedMessage: "추출이 완료되었습니다 드리퍼를 제거해주세요",
+          ready: "준비",
+          done: "완료",
+          resetTimerTitle: "타이머 초기화",
+          resetTimerMessage: "타이머를 멈추고 설정 화면으로 돌아갈까요? 입력한 레시피는 유지됩니다."
+        },
+        en: {
+          languageLabel: "Language",
+          subtitle: "Set your own pouring recipe",
+          resetSettingsLabel: "Reset settings",
+          wakeKeepScreen: "Keep the screen on during brewing for accurate timing.",
+          wakeActive: "Screen wake lock is active during brewing.",
+          wakeAfterStart: "After START, supported browsers will request screen wake lock.",
+          setupAria: "Brewing recipe settings",
+          savedRecipesTitle: "Saved Recipes",
+          categoryLabel: "Category",
+          recipeLabel: "Recipe",
+          applyRecipe: "Apply Recipe",
+          deleteRecipe: "Delete Selected Recipe",
+          recipeCategoryLabel: "Recipe Category",
+          recipeNameLabel: "Recipe Name",
+          recipeNamePlaceholder: "Example: Bright beans recipe",
+          prepNoteLabel: "Coffee Dose and Prep Notes",
+          prepNotePlaceholder: "Example: Coffee 20g / Add 100g ice to the server first",
+          saveCurrentSettings: "Save Current Settings",
+          importRecipe: "Import TXT Recipe",
+          importRecipeSuccess: "Saved {name} and applied it to the current settings.",
+          importRecipeOverwrite: "Overwrote {name} and applied it to the current settings.",
+          importRecipeBatchSuccess: "Saved {count} recipes. The first recipe was applied to the current settings.",
+          importRecipeReadError: "Could not read the TXT file.",
+          importRecipeTooLarge: "Only TXT files up to 64KB can be imported.",
+          importRecipeEmpty: "No recipe content was found in the TXT file.",
+          importRecipeStageMissing: "No pour amounts were found. Example: Amounts: 60/80/80/80",
+          importRecipeStageLimit: "A TXT recipe can contain up to {max} stages.",
+          importRecipeTimeMismatch: "The number of start times and pour amounts does not match.",
+          importRecipeInvalidTime: "Could not read the time format in the TXT file.",
+          importRecipeInvalidAmount: "Pour amounts in the TXT file must be numbers greater than 0.",
+          importRecipeEndBeforeStages: "End time must be after the last stage start time.",
+          importedRecipeFallbackName: "Imported Recipe",
+          endTimeTitle: "Total Brew End Time",
+          minuteLabel: "Min",
+          secondLabel: "Sec",
+          pouringStagesTitle: "Pouring Stages",
+          notificationSettingsAria: "Notification settings",
+          soundLabel: "Sound",
+          vibrationLabel: "Vibration",
+          debugSpeedLabel: "Test Speed",
+          speed1: "1x",
+          speed5: "5x",
+          speed10: "10x",
+          creatorInfoAria: "Creator information",
+          solLinksAria: "sol2coffee links",
+          instagramAria: "Open sol2coffee on Instagram",
+          youtubeAria: "Open sol2coffee on YouTube",
+          addStage: "Add Stage",
+          timerScreenAria: "Brewing timer screen",
+          running: "Running",
+          paused: "Paused",
+          finishedState: "Finished",
+          prepare: "Get ready to brew",
+          elapsedTimeAria: "Elapsed time",
+          currentStageLabel: "Current Stage",
+          currentPouringLabel: "This Pour",
+          cumulativeLabel: "Total",
+          nextPouringLabel: "Next Pour In",
+          progressAria: "Overall progress",
+          pause: "Pause",
+          continue: "Resume",
+          reset: "Reset",
+          restartSameRecipe: "Restart Same Recipe",
+          backToSetup: "Back to Settings",
+          confirmTitle: "Confirm",
+          confirmMessage: "Do you want to continue?",
+          cancel: "Cancel",
+          confirm: "OK",
+          savedRecipeNone: "No saved recipes",
+          savedRecipeHint: "Save the current recipe to show it here.",
+          customPrefix: "Custom",
+          endShort: "End",
+          userSettings: "Custom Settings",
+          resetSettingsTitle: "Reset Settings",
+          resetSettingsMessage: "Restore the default brewing recipe?",
+          recipeNameRequired: "Please enter a recipe name.",
+          overwriteTitle: "Overwrite Recipe",
+          overwriteMessage: "A recipe with the same name exists. Overwrite it with the current settings?",
+          overwriteConfirm: "Overwrite",
+          deleteRecipeTitle: "Delete Recipe",
+          deleteRecipeMessage: "Delete {name}? Current input values will stay as they are.",
+          deleteConfirm: "Delete",
+          saveStorageError: "Could not save the recipe because browser storage is unavailable.",
+          stageName: "Stage {number}",
+          stageDeleteAria: "Delete {stage}",
+          startMinute: "Start Min",
+          startSecond: "Start Sec",
+          pouringAmount: "Pour Amount",
+          currentPouringAmount: "This pour {amount}",
+          cumulativeAmount: "Total {amount}",
+          minStagesError: "At least 1 stage is required.",
+          maxStagesError: "Up to 10 stages are allowed.",
+          endTimeInvalid: "Enter the total brew end time as minutes and 0-59 seconds.",
+          endTimeMin: "Total brew end time must be at least 5 seconds.",
+          stageStartInvalid: "{stage} start time must be minutes and 0-59 seconds.",
+          stageStartNonNegative: "{stage} start time must be 0 seconds or later.",
+          stageStartLater: "{stage} start time must be later than {previousStage}.",
+          stageAmountInvalid: "{stage} pour amount must be a number greater than 0.",
+          endAfterLast: "Total brew end time must be after the last stage start time.",
+          readyUntil: "{time} until {stage}",
+          pourMessage: "Pour {amount} for {stage}",
+          lastStage: "Last stage",
+          finishWarning: "Remove the dripper when brewing ends",
+          finishedMessage: "Brewing is complete. Remove the dripper",
+          ready: "Ready",
+          done: "Done",
+          resetTimerTitle: "Reset Timer",
+          resetTimerMessage: "Stop the timer and return to settings? Your recipe inputs will stay."
+        },
+        zh: {
+          languageLabel: "语言",
+          subtitle: "设置你的专属注水配方",
+          resetSettingsLabel: "重置设置",
+          wakeKeepScreen: "为保证计时准确，萃取时请保持屏幕开启。",
+          wakeActive: "萃取期间已启用防止屏幕熄灭。",
+          wakeAfterStart: "按下 START 后，支持的浏览器会请求防止屏幕熄灭。",
+          setupAria: "冲煮配方设置",
+          savedRecipesTitle: "已保存配方",
+          categoryLabel: "分类",
+          recipeLabel: "配方",
+          applyRecipe: "应用配方",
+          deleteRecipe: "删除所选配方",
+          recipeCategoryLabel: "配方分类",
+          recipeNameLabel: "配方名称",
+          recipeNamePlaceholder: "例如：明亮酸质豆配方",
+          prepNoteLabel: "咖啡粉量及事前准备",
+          prepNotePlaceholder: "例如：咖啡粉20g / 先在分享壶中加入100g冰块",
+          saveCurrentSettings: "保存当前设置",
+          importRecipe: "导入TXT配方",
+          importRecipeSuccess: "已保存 {name}，并应用到当前设置。",
+          importRecipeOverwrite: "已覆盖 {name}，并应用到当前设置。",
+          importRecipeBatchSuccess: "已保存{count}个配方，并将第一个配方应用到当前设置。",
+          importRecipeReadError: "无法读取TXT文件。",
+          importRecipeTooLarge: "只能导入64KB以下的TXT文件。",
+          importRecipeEmpty: "TXT文件中没有找到配方内容。",
+          importRecipeStageMissing: "没有找到注水量。例如：注水量: 60/80/80/80",
+          importRecipeStageLimit: "TXT配方最多可导入{max}段。",
+          importRecipeTimeMismatch: "开始时间数量与注水量数量不一致。",
+          importRecipeInvalidTime: "无法读取TXT文件中的时间格式。",
+          importRecipeInvalidAmount: "TXT文件中的注水量必须是大于0的数字。",
+          importRecipeEndBeforeStages: "结束时间必须晚于最后一段的开始时间。",
+          importedRecipeFallbackName: "导入的配方",
+          endTimeTitle: "总萃取结束时间",
+          minuteLabel: "分",
+          secondLabel: "秒",
+          pouringStagesTitle: "注水段数",
+          notificationSettingsAria: "提醒设置",
+          soundLabel: "提示音",
+          vibrationLabel: "振动",
+          debugSpeedLabel: "测试倍速",
+          speed1: "1倍",
+          speed5: "5倍",
+          speed10: "10倍",
+          creatorInfoAria: "作者信息",
+          solLinksAria: "sol2coffee 链接",
+          instagramAria: "打开 sol2coffee Instagram",
+          youtubeAria: "打开 sol2coffee YouTube",
+          addStage: "添加段数",
+          timerScreenAria: "冲煮计时器运行界面",
+          running: "运行中",
+          paused: "已暂停",
+          finishedState: "完成",
+          prepare: "请准备开始萃取",
+          elapsedTimeAria: "已用时间",
+          currentStageLabel: "当前段数",
+          currentPouringLabel: "本次注水",
+          cumulativeLabel: "累计",
+          nextPouringLabel: "下次注水还有",
+          progressAria: "总进度",
+          pause: "暂停",
+          continue: "继续",
+          reset: "重置",
+          restartSameRecipe: "用相同配方重新开始",
+          backToSetup: "返回设置",
+          confirmTitle: "确认",
+          confirmMessage: "要继续吗？",
+          cancel: "取消",
+          confirm: "确认",
+          savedRecipeNone: "暂无已保存配方",
+          savedRecipeHint: "保存当前配方后会显示在这里。",
+          customPrefix: "自定义",
+          endShort: "结束",
+          userSettings: "自定义设置",
+          resetSettingsTitle: "重置设置",
+          resetSettingsMessage: "要恢复默认冲煮配方吗？",
+          recipeNameRequired: "请输入配方名称。",
+          overwriteTitle: "覆盖配方",
+          overwriteMessage: "已有同名配方。要用当前设置覆盖吗？",
+          overwriteConfirm: "覆盖",
+          deleteRecipeTitle: "删除配方",
+          deleteRecipeMessage: "要删除 {name} 吗？当前输入值会保留。",
+          deleteConfirm: "删除",
+          saveStorageError: "浏览器存储不可用，无法保存配方。",
+          stageName: "第{number}段",
+          stageDeleteAria: "删除{stage}",
+          startMinute: "开始分",
+          startSecond: "开始秒",
+          pouringAmount: "注水量",
+          currentPouringAmount: "本次注水 {amount}",
+          cumulativeAmount: "累计 {amount}",
+          minStagesError: "至少需要1个段数。",
+          maxStagesError: "最多只能设置10个段数。",
+          endTimeInvalid: "总萃取结束时间请输入分钟和0-59秒。",
+          endTimeMin: "总萃取结束时间至少需要5秒。",
+          stageStartInvalid: "{stage}开始时间请输入分钟和0-59秒。",
+          stageStartNonNegative: "{stage}开始时间必须为0秒以上。",
+          stageStartLater: "{stage}开始时间必须晚于{previousStage}。",
+          stageAmountInvalid: "{stage}注水量必须是大于0的数字。",
+          endAfterLast: "总萃取结束时间必须晚于最后一段的开始时间。",
+          readyUntil: "距离{stage}注水还有 {time}",
+          pourMessage: "{stage}请注入 {amount}",
+          lastStage: "最后一段",
+          finishWarning: "萃取结束时请移除滤杯",
+          finishedMessage: "萃取已完成，请移除滤杯",
+          ready: "准备",
+          done: "完成",
+          resetTimerTitle: "重置计时器",
+          resetTimerMessage: "要停止计时器并返回设置吗？已输入的配方会保留。"
+        },
+        ja: {
+          languageLabel: "言語",
+          subtitle: "自分だけの注湯レシピを設定しましょう",
+          resetSettingsLabel: "設定をリセット",
+          wakeKeepScreen: "正確に計時するため、抽出中は画面をオンにしてください。",
+          wakeActive: "抽出中の画面オフ防止が有効です。",
+          wakeAfterStart: "START後、対応ブラウザでは画面オフ防止をリクエストします。",
+          setupAria: "抽出レシピ設定",
+          savedRecipesTitle: "保存済みレシピ",
+          categoryLabel: "分類",
+          recipeLabel: "レシピ",
+          applyRecipe: "レシピを適用",
+          deleteRecipe: "選択レシピを削除",
+          recipeCategoryLabel: "レシピ分類",
+          recipeNameLabel: "レシピ名",
+          recipeNamePlaceholder: "例：酸味を出す豆用",
+          prepNoteLabel: "コーヒー粉量と事前準備",
+          prepNotePlaceholder: "例：コーヒー粉20g / サーバーに氷100gを先に入れる",
+          saveCurrentSettings: "現在の設定を保存",
+          importRecipe: "TXTレシピを読み込む",
+          importRecipeSuccess: "{name}を保存し、現在の設定に適用しました。",
+          importRecipeOverwrite: "{name}を上書きし、現在の設定に適用しました。",
+          importRecipeBatchSuccess: "{count}件のレシピを保存しました。最初のレシピを現在の設定に適用しました。",
+          importRecipeReadError: "TXTファイルを読み込めませんでした。",
+          importRecipeTooLarge: "64KB以下のTXTファイルのみ読み込めます。",
+          importRecipeEmpty: "TXTファイルにレシピ内容がありません。",
+          importRecipeStageMissing: "注湯量が見つかりません。例：注湯量: 60/80/80/80",
+          importRecipeStageLimit: "TXTレシピは最大{max}ステージまで読み込めます。",
+          importRecipeTimeMismatch: "開始時間の数と注湯量の数が一致しません。",
+          importRecipeInvalidTime: "TXTファイルの時間形式を読み取れませんでした。",
+          importRecipeInvalidAmount: "TXTファイルの注湯量は0より大きい数字で入力してください。",
+          importRecipeEndBeforeStages: "終了時間は最後のステージ開始時刻より後にしてください。",
+          importedRecipeFallbackName: "読み込んだレシピ",
+          endTimeTitle: "抽出終了時間",
+          minuteLabel: "分",
+          secondLabel: "秒",
+          pouringStagesTitle: "注湯ステージ",
+          notificationSettingsAria: "通知設定",
+          soundLabel: "通知音",
+          vibrationLabel: "振動",
+          debugSpeedLabel: "テスト速度",
+          speed1: "1倍",
+          speed5: "5倍",
+          speed10: "10倍",
+          creatorInfoAria: "制作者情報",
+          solLinksAria: "sol2coffee リンク",
+          instagramAria: "sol2coffee Instagramを開く",
+          youtubeAria: "sol2coffee YouTubeを開く",
+          addStage: "ステージ追加",
+          timerScreenAria: "抽出タイマー画面",
+          running: "実行中",
+          paused: "一時停止中",
+          finishedState: "完了",
+          prepare: "抽出の準備をしてください",
+          elapsedTimeAria: "経過時間",
+          currentStageLabel: "現在のステージ",
+          currentPouringLabel: "今回の注湯",
+          cumulativeLabel: "累計",
+          nextPouringLabel: "次の注湯まで",
+          progressAria: "全体の進行状況",
+          pause: "一時停止",
+          continue: "再開",
+          reset: "リセット",
+          restartSameRecipe: "同じレシピで再開",
+          backToSetup: "設定画面へ",
+          confirmTitle: "確認",
+          confirmMessage: "続行しますか？",
+          cancel: "キャンセル",
+          confirm: "確認",
+          savedRecipeNone: "保存済みレシピなし",
+          savedRecipeHint: "現在のレシピを保存すると、ここに表示されます。",
+          customPrefix: "自分用",
+          endShort: "終了",
+          userSettings: "ユーザー設定",
+          resetSettingsTitle: "設定をリセット",
+          resetSettingsMessage: "標準の抽出レシピに戻しますか？",
+          recipeNameRequired: "レシピ名を入力してください。",
+          overwriteTitle: "レシピを上書き",
+          overwriteMessage: "同じ名前のレシピがあります。現在の設定で上書きしますか？",
+          overwriteConfirm: "上書き",
+          deleteRecipeTitle: "レシピを削除",
+          deleteRecipeMessage: "{name} を削除しますか？現在の入力値は保持されます。",
+          deleteConfirm: "削除",
+          saveStorageError: "ブラウザの保存領域を使用できないため、レシピを保存できませんでした。",
+          stageName: "{number}投目",
+          stageDeleteAria: "{stage}を削除",
+          startMinute: "開始 分",
+          startSecond: "開始 秒",
+          pouringAmount: "注湯量",
+          currentPouringAmount: "今回の注湯 {amount}",
+          cumulativeAmount: "累計 {amount}",
+          minStagesError: "ステージは最低1つ必要です。",
+          maxStagesError: "ステージは最大10個までです。",
+          endTimeInvalid: "抽出終了時間は分と0-59秒で入力してください。",
+          endTimeMin: "抽出終了時間は最低5秒以上にしてください。",
+          stageStartInvalid: "{stage}の開始時刻は分と0-59秒で入力してください。",
+          stageStartNonNegative: "{stage}の開始時刻は0秒以上にしてください。",
+          stageStartLater: "{stage}の開始時刻は{previousStage}より後にしてください。",
+          stageAmountInvalid: "{stage}の注湯量は0より大きい数字で入力してください。",
+          endAfterLast: "抽出終了時間は最後のステージ開始時刻より後にしてください。",
+          readyUntil: "{stage}まで {time}",
+          pourMessage: "{stage} {amount}を注いでください",
+          lastStage: "最後のステージ",
+          finishWarning: "抽出が終わったらドリッパーを外してください",
+          finishedMessage: "抽出が完了しました ドリッパーを外してください",
+          ready: "準備",
+          done: "完了",
+          resetTimerTitle: "タイマーをリセット",
+          resetTimerMessage: "タイマーを停止して設定画面に戻りますか？入力したレシピは保持されます。"
+        }
+      };
+
+      var STAGE_THEMES = [
+        { bg: "#70513c", fg: "#fff8ee" },
+        { bg: "#556f60", fg: "#f7fff8" },
+        { bg: "#615b78", fg: "#faf7ff" },
+        { bg: "#7a5b52", fg: "#fff8f4" },
+        { bg: "#526f78", fg: "#f3fcff" },
+        { bg: "#6c653f", fg: "#fffbe8" },
+        { bg: "#7b556a", fg: "#fff7fc" },
+        { bg: "#4f6552", fg: "#f8fff7" },
+        { bg: "#694f68", fg: "#fff8ff" },
+        { bg: "#5c6372", fg: "#f7f9ff" }
+      ];
+      var READY_THEME = { bg: "#5e4b42", fg: "#fff8ef" };
+      var WARNING_THEME = { bg: "#8b4d3e", fg: "#fff9f4" };
+      var FINISHED_THEME = { bg: "#2f5d50", fg: "#f6fff9" };
+
+      var appState = {
+        mode: "editing",
+        settings: loadSettings(),
+        customPresets: loadCustomPresets(),
+        activeRecipe: null,
+        rafId: null,
+        startPerfMs: 0,
+        pausedAtPerfMs: 0,
+        accumulatedPauseMs: 0,
+        elapsedSeconds: 0,
+        lastRenderedSecond: -1,
+        triggeredEvents: {},
+        audioContext: null,
+        wakeLock: null,
+        speedMultiplier: 1,
+        debugEnabled: false,
+        modalConfirmHandler: null,
+        lastFocusedElement: null
+      };
+
+      var elements = {
+        setupScreen: document.getElementById("setupScreen"),
+        timerScreen: document.getElementById("timerScreen"),
+        setupBottomBar: document.getElementById("setupBottomBar"),
+        languageSelect: document.getElementById("languageSelect"),
+        resetSettingsButton: document.getElementById("resetSettingsButton"),
+        endMinutes: document.getElementById("endMinutes"),
+        endSeconds: document.getElementById("endSeconds"),
+        presetCategory: document.getElementById("presetCategory"),
+        presetRecipe: document.getElementById("presetRecipe"),
+        presetSummary: document.getElementById("presetSummary"),
+        applyPresetButton: document.getElementById("applyPresetButton"),
+        customPresetCategory: document.getElementById("customPresetCategory"),
+        customPresetName: document.getElementById("customPresetName"),
+        customPresetNote: document.getElementById("customPresetNote"),
+        saveCustomPresetButton: document.getElementById("saveCustomPresetButton"),
+        deleteCustomPresetButton: document.getElementById("deleteCustomPresetButton"),
+        importRecipeButton: document.getElementById("importRecipeButton"),
+        recipeImportFile: document.getElementById("recipeImportFile"),
+        importStatus: document.getElementById("importStatus"),
+        recipeNote: document.getElementById("recipeNote"),
+        stageList: document.getElementById("stageList"),
+        soundEnabled: document.getElementById("soundEnabled"),
+        vibrationEnabled: document.getElementById("vibrationEnabled"),
+        addStageButton: document.getElementById("addStageButton"),
+        startButton: document.getElementById("startButton"),
+        globalError: document.getElementById("globalError"),
+        wakeLockHint: document.getElementById("wakeLockHint"),
+        debugPanel: document.getElementById("debugPanel"),
+        speedSelect: document.getElementById("speedSelect"),
+        timerStateBadge: document.getElementById("timerStateBadge"),
+        timerMessage: document.getElementById("timerMessage"),
+        timerPrepNote: document.getElementById("timerPrepNote"),
+        countdownText: document.getElementById("countdownText"),
+        elapsedTimeText: document.getElementById("elapsedTimeText"),
+        totalTimeText: document.getElementById("totalTimeText"),
+        currentStageInfo: document.getElementById("currentStageInfo"),
+        currentAmountInfo: document.getElementById("currentAmountInfo"),
+        cumulativeAmountInfo: document.getElementById("cumulativeAmountInfo"),
+        nextStageInfo: document.getElementById("nextStageInfo"),
+        progressBar: document.getElementById("progressBar"),
+        pauseButton: document.getElementById("pauseButton"),
+        resetTimerButton: document.getElementById("resetTimerButton"),
+        restartSameRecipeButton: document.getElementById("restartSameRecipeButton"),
+        backToSetupButton: document.getElementById("backToSetupButton"),
+        modalBackdrop: document.getElementById("modalBackdrop"),
+        modalTitle: document.getElementById("modalTitle"),
+        modalMessage: document.getElementById("modalMessage"),
+        modalCancelButton: document.getElementById("modalCancelButton"),
+        modalConfirmButton: document.getElementById("modalConfirmButton")
+      };
+
+      initializeApp();
+
+      function initializeApp() {
+        appState.debugEnabled = shouldEnableDebug();
+        elements.languageSelect.value = appState.settings.language || "ko";
+        elements.debugPanel.classList.toggle("hidden", !appState.debugEnabled);
+        populateStaticTimeSelectors();
+        applyTranslations();
+        renderPresetSelectors();
+        renderSetupScreen();
+        bindEvents();
+        updateWakeLockHint();
+      }
+
+      function bindEvents() {
+        elements.languageSelect.addEventListener("change", function () {
+          appState.settings.language = normalizeLanguage(elements.languageSelect.value);
+          applyTranslations();
+          renderPresetSelectors();
+          renderSetupScreen();
+          if (appState.activeRecipe) {
+            renderTimer(appState.elapsedSeconds);
+          }
+          saveSettings();
+        });
+
+        elements.resetSettingsButton.addEventListener("click", function () {
+          openModal({
+            title: t("resetSettingsTitle"),
+            message: t("resetSettingsMessage"),
+            confirmText: t("reset"),
+            confirmClass: "danger",
+            onConfirm: resetSettingsToDefault
+          });
+        });
+
+        elements.endMinutes.addEventListener("change", handleSetupInputChange);
+        elements.endSeconds.addEventListener("change", handleSetupInputChange);
+        elements.presetCategory.addEventListener("change", function () {
+          elements.customPresetCategory.value = elements.presetCategory.value;
+          renderPresetRecipeOptions();
+          updatePresetSummary();
+        });
+        elements.presetRecipe.addEventListener("change", updatePresetSummary);
+        elements.applyPresetButton.addEventListener("click", applySelectedPreset);
+        elements.customPresetNote.addEventListener("input", function () {
+          appState.settings.prepNote = elements.customPresetNote.value.trim();
+          updateRecipeNote();
+          saveSettings();
+        });
+        elements.saveCustomPresetButton.addEventListener("click", saveCurrentRecipeAsCustomPreset);
+        elements.deleteCustomPresetButton.addEventListener("click", requestDeleteSelectedCustomPreset);
+        elements.importRecipeButton.addEventListener("click", requestRecipeImportFile);
+        elements.recipeImportFile.addEventListener("change", handleRecipeImportFileChange);
+        elements.soundEnabled.addEventListener("change", handleSetupInputChange);
+        elements.vibrationEnabled.addEventListener("change", handleSetupInputChange);
+        elements.addStageButton.addEventListener("click", addStage);
+        elements.startButton.addEventListener("click", startTimer);
+        elements.speedSelect.addEventListener("change", function () {
+          appState.speedMultiplier = parseFloat(elements.speedSelect.value) || 1;
+        });
+
+        elements.pauseButton.addEventListener("click", togglePause);
+        elements.resetTimerButton.addEventListener("click", requestTimerReset);
+        elements.restartSameRecipeButton.addEventListener("click", restartSameRecipe);
+        elements.backToSetupButton.addEventListener("click", returnToSetup);
+        elements.modalCancelButton.addEventListener("click", closeModal);
+        elements.modalConfirmButton.addEventListener("click", confirmModal);
+        elements.modalBackdrop.addEventListener("click", function (event) {
+          if (event.target === elements.modalBackdrop) {
+            closeModal();
+          }
+        });
+
+        document.addEventListener("keydown", function (event) {
+          if (event.key === "Escape" && elements.modalBackdrop.classList.contains("open")) {
+            closeModal();
+          }
+        });
+
+        document.addEventListener("visibilitychange", function () {
+          if (document.visibilityState === "visible" && appState.mode === "running") {
+            requestWakeLock();
+          }
+        });
+      }
+
+      function shouldEnableDebug() {
+        try {
+          var params = new URLSearchParams(window.location.search);
+          return DEBUG_MODE || params.get("debug") === "1";
+        } catch (error) {
+          return DEBUG_MODE;
+        }
+      }
+
+      function normalizeLanguage(language) {
+        return TRANSLATIONS[language] ? language : "ko";
+      }
+
+      function currentLanguage() {
+        if (typeof appState !== "undefined" && appState.settings) {
+          return normalizeLanguage(appState.settings.language);
+        }
+        return "ko";
+      }
+
+      function t(key, values) {
+        var language = currentLanguage();
+        var dictionary = TRANSLATIONS[language] || TRANSLATIONS.ko;
+        var text = dictionary[key] || TRANSLATIONS.ko[key] || key;
+        if (!values) {
+          return text;
+        }
+        return text.replace(/\{(\w+)\}/g, function (match, name) {
+          return Object.prototype.hasOwnProperty.call(values, name) ? String(values[name]) : match;
+        });
+      }
+
+      function applyTranslations() {
+        var language = currentLanguage();
+        document.documentElement.lang = language;
+        elements.languageSelect.value = language;
+
+        var textElements = document.querySelectorAll("[data-i18n]");
+        Array.prototype.forEach.call(textElements, function (element) {
+          element.textContent = t(element.dataset.i18n);
+        });
+
+        var placeholderElements = document.querySelectorAll("[data-i18n-placeholder]");
+        Array.prototype.forEach.call(placeholderElements, function (element) {
+          element.setAttribute("placeholder", t(element.dataset.i18nPlaceholder));
+        });
+
+        var ariaElements = document.querySelectorAll("[data-i18n-aria-label]");
+        Array.prototype.forEach.call(ariaElements, function (element) {
+          element.setAttribute("aria-label", t(element.dataset.i18nAriaLabel));
+        });
+
+        elements.modalCancelButton.textContent = t("cancel");
+        if (!elements.modalBackdrop.classList.contains("open")) {
+          elements.modalTitle.textContent = t("confirmTitle");
+          elements.modalMessage.textContent = t("confirmMessage");
+          elements.modalConfirmButton.textContent = t("confirm");
+        }
+        updateWakeLockHint();
+      }
+
+      function formatStageName(number) {
+        return t("stageName", { number: number });
+      }
+
+      function renderPresetSelectors() {
+        elements.presetCategory.innerHTML = "";
+        RECIPE_PRESETS.forEach(function (group) {
+          var option = document.createElement("option");
+          option.value = group.id;
+          option.textContent = group.label;
+          elements.presetCategory.appendChild(option);
+        });
+        renderPresetRecipeOptions();
+        elements.customPresetCategory.value = elements.presetCategory.value || RECIPE_PRESETS[0].id;
+        updatePresetSummary();
+      }
+
+      function renderPresetRecipeOptions() {
+        var group = getSelectedPresetGroup();
+        elements.presetRecipe.innerHTML = "";
+        if (!group) {
+          return;
+        }
+
+        var recipes = getPresetRecipesForCategory(group.id);
+        if (recipes.length === 0) {
+          var emptyOption = document.createElement("option");
+          emptyOption.value = "";
+          emptyOption.textContent = t("savedRecipeNone");
+          elements.presetRecipe.appendChild(emptyOption);
+          elements.presetRecipe.disabled = true;
+          elements.applyPresetButton.disabled = true;
+          elements.deleteCustomPresetButton.disabled = true;
+          return;
+        }
+
+        elements.presetRecipe.disabled = false;
+        elements.applyPresetButton.disabled = false;
+        recipes.forEach(function (recipe) {
+          var option = document.createElement("option");
+          option.value = recipe.id;
+          option.textContent = recipe.name;
+          elements.presetRecipe.appendChild(option);
+        });
+      }
+
+      function getPresetRecipesForCategory(categoryId) {
+        var group = getPresetGroupById(categoryId);
+        var baseRecipes = group ? group.recipes.slice() : [];
+        var customRecipes = appState.customPresets.filter(function (preset) {
+          return preset.categoryId === categoryId;
+        });
+        return baseRecipes.concat(customRecipes);
+      }
+
+      function getPresetGroupById(categoryId) {
+        for (var index = 0; index < RECIPE_PRESETS.length; index += 1) {
+          if (RECIPE_PRESETS[index].id === categoryId) {
+            return RECIPE_PRESETS[index];
+          }
+        }
+        return null;
+      }
+
+      function getSelectedPresetGroup() {
+        var selectedCategory = elements.presetCategory.value || RECIPE_PRESETS[0].id;
+        return getPresetGroupById(selectedCategory) || RECIPE_PRESETS[0];
+      }
+
+      function getSelectedPreset() {
+        var group = getSelectedPresetGroup();
+        var recipes = group ? getPresetRecipesForCategory(group.id) : [];
+        if (!group || recipes.length === 0) {
+          return null;
+        }
+        var selectedRecipe = elements.presetRecipe.value || recipes[0].id;
+        for (var index = 0; index < recipes.length; index += 1) {
+          if (recipes[index].id === selectedRecipe) {
+            return recipes[index];
+          }
+        }
+        return recipes[0];
+      }
+
+      function updatePresetSummary() {
+        var preset = getSelectedPreset();
+        if (!preset) {
+          elements.presetSummary.textContent = t("savedRecipeHint");
+          elements.deleteCustomPresetButton.disabled = true;
+          return;
+        }
+        elements.presetSummary.textContent = createRecipeSummary(preset, preset.isCustom);
+        elements.deleteCustomPresetButton.disabled = !preset.isCustom;
+      }
+
+      function applySelectedPreset() {
+        var preset = getSelectedPreset();
+        if (!preset) {
+          return;
+        }
+
+        var soundEnabled = elements.soundEnabled.checked;
+        var vibrationEnabled = elements.vibrationEnabled.checked;
+        appState.settings = {
+          version: SETTINGS_VERSION,
+          extractionEndSeconds: preset.extractionEndSeconds,
+          stages: preset.stages.map(function (stage) {
+            return {
+              startSeconds: stage.startSeconds,
+              amountGrams: stage.amountGrams
+            };
+          }),
+          soundEnabled: soundEnabled,
+          vibrationEnabled: vibrationEnabled,
+          language: appState.settings.language,
+          presetName: preset.name,
+          prepNote: preset.prepNote || ""
+        };
+
+        renderSetupScreen();
+        elements.endMinutes.scrollIntoView({ block: "center", behavior: "smooth" });
+      }
+
+      function saveCurrentRecipeAsCustomPreset() {
+        var name = elements.customPresetName.value.trim();
+        if (!name) {
+          showGlobalError(t("recipeNameRequired"));
+          elements.customPresetName.focus();
+          return;
+        }
+
+        var validation = validateSettings();
+        if (!validation.valid) {
+          handleValidationError(validation);
+          return;
+        }
+
+        var categoryId = elements.customPresetCategory.value === "ice" ? "ice" : "hot";
+        var existing = findCustomPresetByName(categoryId, name);
+        if (existing) {
+          openModal({
+            title: t("overwriteTitle"),
+            message: t("overwriteMessage"),
+            confirmText: t("overwriteConfirm"),
+            confirmClass: "danger",
+            onConfirm: function () {
+              upsertCustomPreset(categoryId, name, existing.id);
+            }
+          });
+          return;
+        }
+
+        upsertCustomPreset(categoryId, name, null);
+      }
+
+      function upsertCustomPreset(categoryId, name, existingId) {
+        readSettingsFromInputs();
+        var typedPrepNote = elements.customPresetNote.value.trim();
+        var customPreset = {
+          id: existingId || createCustomPresetId(),
+          categoryId: categoryId,
+          name: name,
+          summary: createRecipeSummary(appState.settings, true),
+          prepNote: typedPrepNote || (categoryId === "ice" ? appState.settings.prepNote || "" : ""),
+          extractionEndSeconds: appState.settings.extractionEndSeconds,
+          stages: appState.settings.stages.map(function (stage) {
+            return {
+              startSeconds: stage.startSeconds,
+              amountGrams: stage.amountGrams
+            };
+          }),
+          isCustom: true,
+          updatedAt: Date.now()
+        };
+
+        appState.customPresets = appState.customPresets.filter(function (preset) {
+          return preset.id !== customPreset.id;
+        });
+        appState.customPresets.push(customPreset);
+        appState.customPresets.sort(function (a, b) {
+          return a.name.localeCompare(b.name, "ko");
+        });
+        appState.settings.prepNote = customPreset.prepNote;
+        saveCustomPresets();
+        saveSettings();
+        elements.presetCategory.value = categoryId;
+        renderPresetRecipeOptions();
+        elements.presetRecipe.value = customPreset.id;
+        elements.customPresetCategory.value = categoryId;
+        updatePresetSummary();
+        updateRecipeNote();
+        elements.customPresetName.value = "";
+      }
+
+      function requestDeleteSelectedCustomPreset() {
+        var preset = getSelectedPreset();
+        if (!preset || !preset.isCustom) {
+          return;
+        }
+        openModal({
+          title: t("deleteRecipeTitle"),
+          message: t("deleteRecipeMessage", { name: preset.name }),
+          confirmText: t("deleteConfirm"),
+          confirmClass: "danger",
+          onConfirm: function () {
+            deleteCustomPreset(preset.id);
+          }
+        });
+      }
+
+      function deleteCustomPreset(presetId) {
+        appState.customPresets = appState.customPresets.filter(function (preset) {
+          return preset.id !== presetId;
+        });
+        saveCustomPresets();
+        renderPresetRecipeOptions();
+        updatePresetSummary();
+      }
+
+      function requestRecipeImportFile() {
+        elements.recipeImportFile.value = "";
+        elements.recipeImportFile.click();
+      }
+
+      function handleRecipeImportFileChange(event) {
+        var file = event.target.files && event.target.files[0];
+        if (!file) {
+          return;
+        }
+
+        if (file.size > 65536) {
+          showImportStatus(t("importRecipeTooLarge"), true);
+          elements.recipeImportFile.value = "";
+          return;
+        }
+
+        var reader = new FileReader();
+        reader.onload = function () {
+          importRecipeText(reader.result, file.name);
+          elements.recipeImportFile.value = "";
+        };
+        reader.onerror = function () {
+          showImportStatus(t("importRecipeReadError"), true);
+          elements.recipeImportFile.value = "";
+        };
+        reader.readAsText(file, "UTF-8");
+      }
+
+      function importRecipeText(text, fileName) {
+        try {
+          var importedRecipes = parseRecipeTextList(text, fileName);
+          var savedPresets = [];
+
+          importedRecipes.forEach(function (importedRecipe) {
+            var existing = findCustomPresetByName(importedRecipe.categoryId, importedRecipe.name);
+            var customPreset = createCustomPresetFromImport(importedRecipe, existing ? existing.id : null);
+
+            appState.customPresets = appState.customPresets.filter(function (preset) {
+              return preset.id !== customPreset.id;
+            });
+            appState.customPresets.push(customPreset);
+            savedPresets.push({
+              preset: customPreset,
+              overwritten: Boolean(existing)
+            });
+          });
+
+          appState.customPresets.sort(function (a, b) {
+            return a.name.localeCompare(b.name, "ko");
+          });
+
+          if (!savedPresets.length) {
+            throw new Error(t("importRecipeEmpty"));
+          }
+
+          var selectedPreset = savedPresets[0].preset;
+          applyImportedPresetToSettings(selectedPreset);
+
+          saveCustomPresets();
+          saveSettings();
+          renderSetupScreen();
+          elements.presetCategory.value = selectedPreset.categoryId;
+          renderPresetRecipeOptions();
+          elements.presetRecipe.value = selectedPreset.id;
+          elements.customPresetCategory.value = selectedPreset.categoryId;
+          updatePresetSummary();
+          if (savedPresets.length === 1) {
+            showImportStatus(t(savedPresets[0].overwritten ? "importRecipeOverwrite" : "importRecipeSuccess", { name: selectedPreset.name }), false);
+          } else {
+            showImportStatus(t("importRecipeBatchSuccess", { count: savedPresets.length }), false);
+          }
+        } catch (error) {
+          showImportStatus(error && error.message ? error.message : t("importRecipeReadError"), true);
+        }
+      }
+
+      function applyImportedPresetToSettings(customPreset) {
+        appState.settings = {
+          version: SETTINGS_VERSION,
+          extractionEndSeconds: customPreset.extractionEndSeconds,
+          stages: customPreset.stages.map(function (stage) {
+            return {
+              startSeconds: stage.startSeconds,
+              amountGrams: stage.amountGrams
+            };
+          }),
+          soundEnabled: elements.soundEnabled.checked,
+          vibrationEnabled: elements.vibrationEnabled.checked,
+          language: appState.settings.language,
+          presetName: customPreset.name,
+          prepNote: customPreset.prepNote
+        };
+      }
+
+      function createCustomPresetFromImport(importedRecipe, existingId) {
+        var customPreset = {
+          id: existingId || createCustomPresetId(),
+          categoryId: importedRecipe.categoryId,
+          name: importedRecipe.name,
+          summary: "",
+          prepNote: importedRecipe.prepNote,
+          extractionEndSeconds: importedRecipe.extractionEndSeconds,
+          stages: importedRecipe.stages.map(function (stage) {
+            return {
+              startSeconds: stage.startSeconds,
+              amountGrams: stage.amountGrams
+            };
+          }),
+          isCustom: true,
+          updatedAt: Date.now()
+        };
+        customPreset.summary = createRecipeSummary(customPreset, true);
+        return customPreset;
+      }
+
+      function parseRecipeText(text, fileName) {
+        return parseRecipeTextList(text, fileName)[0];
+      }
+
+      function parseRecipeTextList(text, fileName) {
+        var source = normalizeRecipeImportText(String(text || "")).replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n");
+        if (!source.trim()) {
+          throw new Error(t("importRecipeEmpty"));
+        }
+
+        return splitRecipeImportBlocks(source).map(function (block, index) {
+          return parseRecipeTextBlock(block, fileName, index);
+        });
+      }
+
+      function splitRecipeImportBlocks(source) {
+        var blocks = [];
+        var currentBlock = [];
+
+        source.split("\n").forEach(function (rawLine) {
+          var line = rawLine.trim();
+          if (line && !isRecipeImportCommentLine(line) && isRecipeImportNameLine(line) && hasRecipeImportContent(currentBlock)) {
+            blocks.push(currentBlock.join("\n"));
+            currentBlock = [];
+          }
+          currentBlock.push(rawLine);
+        });
+
+        if (hasRecipeImportContent(currentBlock)) {
+          blocks.push(currentBlock.join("\n"));
+        }
+
+        return blocks.length ? blocks : [source];
+      }
+
+      function hasRecipeImportContent(lines) {
+        return lines.some(function (rawLine) {
+          var line = String(rawLine || "").trim();
+          return Boolean(line && !isRecipeImportCommentLine(line));
+        });
+      }
+
+      function isRecipeImportNameLine(line) {
+        var field = splitRecipeImportFieldLine(line);
+        return Boolean(field && normalizeRecipeImportKey(field.key) === "name");
+      }
+
+      function parseRecipeTextBlock(text, fileName, blockIndex) {
+        var source = normalizeRecipeImportText(String(text || "")).replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n");
+        if (!source.trim()) {
+          throw new Error(t("importRecipeEmpty"));
+        }
+
+        var imported = {
+          name: "",
+          categoryId: "",
+          prepNote: "",
+          extractionEndSeconds: NaN,
+          startTimes: [],
+          amounts: [],
+          stages: []
+        };
+        var amountLinesStarted = false;
+
+        source.split("\n").forEach(function (rawLine) {
+          var line = rawLine.trim();
+          if (!line || isRecipeImportCommentLine(line)) {
+            return;
+          }
+
+          var field = splitRecipeImportFieldLine(line);
+          if (field) {
+            var key = normalizeRecipeImportKey(field.key);
+            if (key === "name") {
+              imported.name = field.value.trim();
+              return;
+            }
+            if (key === "category") {
+              imported.categoryId = parseRecipeImportCategory(field.value);
+              return;
+            }
+            if (key === "prep") {
+              appendRecipeImportPrepNote(imported, field.value);
+              return;
+            }
+            if (key === "end") {
+              imported.extractionEndSeconds = parseRecipeImportTimeValue(field.value);
+              return;
+            }
+            if (key === "times") {
+              imported.startTimes = parseRecipeImportTimes(field.value);
+              return;
+            }
+            if (key === "amounts") {
+              var amountField = parseRecipeImportAmountLine(field.value);
+              imported.amounts = imported.amounts.concat(amountField.amounts.length ? amountField.amounts : parseRecipeImportAmounts(field.value));
+              appendRecipeImportPrepNote(imported, amountField.note);
+              amountLinesStarted = true;
+              return;
+            }
+            if (key === "stage") {
+              var stageFromValue = parseRecipeImportStageLine(field.value);
+              if (stageFromValue) {
+                imported.stages.push(stageFromValue);
+                amountLinesStarted = true;
+              }
+              return;
+            }
+
+            if (amountLinesStarted) {
+              appendRecipeImportPrepNote(imported, line);
+              return;
+            }
+
+            var timesFromUnknownValue = parseRecipeImportStandaloneTimes(field.value);
+            if (timesFromUnknownValue.length) {
+              imported.startTimes = imported.startTimes.concat(timesFromUnknownValue);
+              return;
+            }
+            var stageFromUnknownValue = parseRecipeImportStageLine(field.value);
+            if (stageFromUnknownValue) {
+              imported.stages.push(stageFromUnknownValue);
+              amountLinesStarted = true;
+              return;
+            }
+            var amountLineFromUnknownValue = parseRecipeImportAmountLine(field.value);
+            if (amountLineFromUnknownValue.amounts.length) {
+              imported.amounts = imported.amounts.concat(amountLineFromUnknownValue.amounts);
+              appendRecipeImportPrepNote(imported, amountLineFromUnknownValue.note);
+              amountLinesStarted = true;
+              return;
+            }
+            var gramAmountsFromUnknownValue = parseRecipeImportGramAmounts(field.value);
+            if (gramAmountsFromUnknownValue.length) {
+              imported.amounts = imported.amounts.concat(gramAmountsFromUnknownValue);
+              amountLinesStarted = true;
+              return;
+            }
+          }
+
+          var standaloneTimes = parseRecipeImportStandaloneTimes(line);
+          if (standaloneTimes.length) {
+            imported.startTimes = imported.startTimes.concat(standaloneTimes);
+            return;
+          }
+
+          var stage = parseRecipeImportStageLine(line);
+          if (stage) {
+            imported.stages.push(stage);
+            amountLinesStarted = true;
+            return;
+          }
+
+          var amountLine = parseRecipeImportAmountLine(line);
+          if (amountLine.amounts.length) {
+            imported.amounts = imported.amounts.concat(amountLine.amounts);
+            appendRecipeImportPrepNote(imported, amountLine.note);
+            amountLinesStarted = true;
+            return;
+          }
+
+          if (amountLinesStarted) {
+            appendRecipeImportPrepNote(imported, line);
+            return;
+          }
+
+          var gramAmounts = parseRecipeImportGramAmounts(line);
+          if (gramAmounts.length) {
+            imported.amounts = imported.amounts.concat(gramAmounts);
+            amountLinesStarted = true;
+          }
+        });
+
+        return normalizeImportedRecipe(imported, fileName, blockIndex);
+      }
+
+      function appendRecipeImportPrepNote(imported, note) {
+        var cleanNote = String(note || "").trim();
+        if (!cleanNote) {
+          return;
+        }
+        imported.prepNote = imported.prepNote ? imported.prepNote + " / " + cleanNote : cleanNote;
+      }
+
+      function normalizeImportedRecipe(imported, fileName, blockIndex) {
+        var stages = imported.stages.slice();
+        if (!stages.length && imported.amounts.length) {
+          var startTimes = imported.startTimes.slice();
+          if (startTimes.length === imported.amounts.length + 1) {
+            if (!Number.isFinite(imported.extractionEndSeconds)) {
+              imported.extractionEndSeconds = startTimes[startTimes.length - 1];
+            }
+            startTimes = startTimes.slice(0, -1);
+          }
+
+          if (startTimes.length && startTimes.length !== imported.amounts.length) {
+            throw new Error(t("importRecipeTimeMismatch"));
+          }
+          startTimes = startTimes.length ? startTimes : createDefaultRecipeImportStartTimes(imported.amounts.length);
+          stages = imported.amounts.map(function (amount, index) {
+            return {
+              startSeconds: startTimes[index],
+              amountGrams: amount
+            };
+          });
+        }
+
+        if (!stages.length) {
+          throw new Error(t("importRecipeStageMissing"));
+        }
+        if (stages.length > MAX_STAGES) {
+          throw new Error(t("importRecipeStageLimit", { max: MAX_STAGES }));
+        }
+
+        stages = stages.map(function (stage) {
+          var startSeconds = Math.floor(Number(stage.startSeconds));
+          var amountGrams = Number(stage.amountGrams);
+          if (!Number.isFinite(startSeconds) || startSeconds < 0) {
+            throw new Error(t("importRecipeInvalidTime"));
+          }
+          if (!Number.isFinite(amountGrams) || amountGrams <= 0) {
+            throw new Error(t("importRecipeInvalidAmount"));
+          }
+          return {
+            startSeconds: startSeconds,
+            amountGrams: amountGrams
+          };
+        }).sort(function (a, b) {
+          return a.startSeconds - b.startSeconds;
+        });
+
+        for (var index = 1; index < stages.length; index += 1) {
+          if (stages[index].startSeconds <= stages[index - 1].startSeconds) {
+            throw new Error(t("stageStartLater", { stage: formatStageName(index + 1), previousStage: formatStageName(index) }));
+          }
+        }
+
+        var extractionEndSeconds = Number.isFinite(imported.extractionEndSeconds) ? Math.floor(imported.extractionEndSeconds) : inferRecipeImportEndSeconds(stages);
+        if (!Number.isFinite(extractionEndSeconds) || extractionEndSeconds < FINISH_WARNING_SECONDS) {
+          throw new Error(t("importRecipeInvalidTime"));
+        }
+        if (extractionEndSeconds <= stages[stages.length - 1].startSeconds) {
+          throw new Error(t("importRecipeEndBeforeStages"));
+        }
+
+        var fallbackCategory = elements.customPresetCategory.value || elements.presetCategory.value;
+        var fallbackName = getRecipeImportFileBaseName(fileName);
+        if (typeof blockIndex === "number" && blockIndex > 0 && fallbackName) {
+          fallbackName += " " + String(blockIndex + 1);
+        }
+        var name = (imported.name || fallbackName || t("importedRecipeFallbackName")).trim().slice(0, 28);
+        return {
+          categoryId: imported.categoryId || (fallbackCategory === "ice" ? "ice" : "hot"),
+          name: name || t("importedRecipeFallbackName"),
+          prepNote: imported.prepNote.trim().slice(0, 240),
+          extractionEndSeconds: extractionEndSeconds,
+          stages: stages
+        };
+      }
+
+      function splitRecipeImportFieldLine(line) {
+        if (/^\s*\d+\s*:\s*\d{1,2}/.test(line)) {
+          return null;
+        }
+        var match = line.match(/^(.{1,34}?)\s*[:=：]\s*(.*)$/);
+        if (match) {
+          return {
+            key: match[1].trim(),
+            value: match[2].trim()
+          };
+        }
+
+        return splitRecipeImportLooseFieldLine(line);
+      }
+
+      function splitRecipeImportLooseFieldLine(line) {
+        var prefixes = [
+          "원두량 및 사전준비사항",
+          "원두량 및 사전 준비 사항",
+          "Coffee Dose and Prep Notes",
+          "咖啡粉量及事前准备",
+          "コーヒー粉量と事前準備",
+          "사전 준비 사항",
+          "Recipe Category",
+          "Recipe Name",
+          "Prep Note",
+          "End Time",
+          "Start Times",
+          "Pour Amounts",
+          "Pour Amount",
+          "레시피 이름",
+          "레시피 분류",
+          "사전준비사항",
+          "사전준비",
+          "준비사항",
+          "종료시간",
+          "시작시간",
+          "푸어링 물양",
+          "푸어링물양",
+          "레시피명",
+          "분류",
+          "준비",
+          "물양",
+          "푸어링",
+          "주입량",
+          "Category",
+          "Name",
+          "Prep",
+          "End",
+          "Starts",
+          "Amounts",
+          "Amount",
+          "配方名称",
+          "配方分类",
+          "事前准备",
+          "开始时间",
+          "结束时间",
+          "注水量",
+          "名称",
+          "分类",
+          "准备",
+          "结束",
+          "水量",
+          "レシピ分類",
+          "レシピ名",
+          "事前準備",
+          "開始時間",
+          "終了時間",
+          "注湯量",
+          "カテゴリ",
+          "名前",
+          "準備",
+          "終了",
+          "湯量"
+        ];
+
+        for (var index = 0; index < prefixes.length; index += 1) {
+          var prefix = prefixes[index];
+          var pattern = new RegExp("^\\s*" + escapeRegExp(prefix).replace(/\\s+/g, "\\s+") + "\\s+(.+)$", "i");
+          var match = line.match(pattern);
+          if (match) {
+            return {
+              key: prefix,
+              value: match[1].trim()
+            };
+          }
+        }
+
+        return null;
+      }
+
+      function escapeRegExp(value) {
+        return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      }
+
+      function normalizeRecipeImportKey(key) {
+        var normalized = normalizeRecipeImportText(key).toLowerCase().replace(/[\s._-]/g, "");
+        if (/^(?:\d+)?차$/.test(normalized) || /^(?:stage|step)\d*$/.test(normalized) || /^第?\d*(?:段|投目|投)$/.test(normalized)) {
+          return "stage";
+        }
+        if (["레시피명", "레시피이름", "이름", "name", "recipename", "配方名称", "名称", "レシピ名", "名前"].indexOf(normalized) >= 0) {
+          return "name";
+        }
+        if (["분류", "레시피분류", "카테고리", "category", "recipecategory", "type", "配方分类", "分类", "分類", "レシピ分類", "カテゴリ"].indexOf(normalized) >= 0) {
+          return "category";
+        }
+        if (["원두량및사전준비사항", "사전준비사항", "사전준비", "준비", "준비사항", "coffeedoseandprepnotes", "prep", "prepnote", "preparation", "咖啡粉量及事前准备", "事前准备", "准备", "準備", "コーヒー粉量と事前準備", "事前準備"].indexOf(normalized) >= 0) {
+          return "prep";
+        }
+        if (["종료시간", "종료", "전체추출종료시간", "end", "endtime", "totaltime", "brewtime", "结束时间", "结束", "总萃取结束时间", "終了時間", "終了", "抽出終了時間"].indexOf(normalized) >= 0) {
+          return "end";
+        }
+        if (["시작시간", "차수시작시간", "starttimes", "starttime", "starts", "开始时间", "開始時間"].indexOf(normalized) >= 0) {
+          return "times";
+        }
+        if (["물양", "푸어링물양", "푸어링", "주입량", "amounts", "amount", "pouramounts", "pouramount", "注水量", "水量", "注湯量", "湯量"].indexOf(normalized) >= 0) {
+          return "amounts";
+        }
+        if (["차수", "단계", "stage", "step", "段", "投目", "投"].indexOf(normalized) >= 0) {
+          return "stage";
+        }
+        return "";
+      }
+
+      function parseRecipeImportCategory(value) {
+        var normalized = normalizeRecipeImportText(value).toLowerCase();
+        if (normalized.indexOf("ice") >= 0 || normalized.indexOf("아이스") >= 0 || normalized.indexOf("冰") >= 0 || normalized.indexOf("アイス") >= 0) {
+          return "ice";
+        }
+        if (normalized.indexOf("hot") >= 0 || normalized.indexOf("핫") >= 0 || normalized.indexOf("热") >= 0 || normalized.indexOf("熱") >= 0 || normalized.indexOf("ホット") >= 0) {
+          return "hot";
+        }
+        return "";
+      }
+
+      function parseRecipeImportStageLine(line) {
+        var text = normalizeRecipeImportText(line)
+          .replace(/^\s*[-*]\s*/, "")
+          .replace(/^\s*(?:\d+\s*(?:차|번째|단계|投目|投|段)|stage\s*\d+|step\s*\d+|第\s*\d+\s*(?:段|投目|投))\s*[:.)-]?\s*/i, "");
+        var allTimeMatches = text.match(/\d+\s*:\s*\d{1,2}/g) || [];
+        var timeMatch = allTimeMatches.length ? text.match(/\d+\s*:\s*\d{1,2}/) : null;
+        if (!timeMatch) {
+          return null;
+        }
+
+        var startSeconds = parseRecipeImportTimeValue(timeMatch[0]);
+        var remainder = text.slice(0, timeMatch.index) + " " + text.slice(timeMatch.index + timeMatch[0].length);
+        var amountMatch = remainder.match(/(\d+(?:\.\d+)?)\s*(?:g|gram|grams|그램|克|グラム)/i);
+        if (!amountMatch && allTimeMatches.length === 1) {
+          amountMatch = remainder.match(/(\d+(?:\.\d+)?)/);
+        }
+        if (!amountMatch) {
+          return null;
+        }
+
+        return {
+          startSeconds: startSeconds,
+          amountGrams: Number(amountMatch[1])
+        };
+      }
+
+      function parseRecipeImportAmounts(value) {
+        var matches = normalizeRecipeImportText(value).match(/\d+(?:\.\d+)?/g) || [];
+        return matches.map(function (match) {
+          return Number(match);
+        });
+      }
+
+      function parseRecipeImportAmountLine(value) {
+        var text = normalizeRecipeImportText(value).trim();
+        if (!text || /\d+\s*:\s*\d{1,2}/.test(text)) {
+          return { amounts: [], note: "" };
+        }
+
+        var rest = text;
+        var amounts = [];
+        var amountMatcher = /^(\d+(?:\.\d+)?)\s*(?:g|gram|grams|그램|克|グラム)?(?:\s*[\/,，、|]\s*|\s+|$)/i;
+        var match = rest.match(amountMatcher);
+        while (match) {
+          amounts.push(Number(match[1]));
+          rest = rest.slice(match[0].length).trim();
+          match = rest.match(amountMatcher);
+        }
+
+        return {
+          amounts: amounts,
+          note: rest
+        };
+      }
+
+      function parseRecipeImportStandaloneTimes(value) {
+        var text = normalizeRecipeImportText(value);
+        if (parseRecipeImportStandaloneAmounts(text).length) {
+          return [];
+        }
+
+        var matches = text.match(/\d+\s*:\s*\d{1,2}/g) || [];
+        if (!matches.length) {
+          return [];
+        }
+
+        var remainder = text.replace(/\d+\s*:\s*\d{1,2}/g, "").replace(/[\/,，、|\s.-]/g, "");
+        if (remainder) {
+          return [];
+        }
+        return matches.map(parseRecipeImportTimeValue);
+      }
+
+      function parseRecipeImportStandaloneAmounts(value) {
+        var text = normalizeRecipeImportText(value);
+        if (/\d+\s*:\s*\d{1,2}/.test(text)) {
+          return [];
+        }
+
+        var matches = text.match(/\d+(?:\.\d+)?/g) || [];
+        if (!matches.length) {
+          return [];
+        }
+
+        var remainder = text
+          .replace(/\d+(?:\.\d+)?\s*(?:g|gram|grams|그램|克|グラム)?/gi, "")
+          .replace(/[\/,，、|\s]/g, "");
+        if (remainder) {
+          return [];
+        }
+
+        return matches.map(function (match) {
+          return Number(match);
+        });
+      }
+
+      function parseRecipeImportGramAmounts(value) {
+        var amounts = [];
+        var text = normalizeRecipeImportText(value);
+        var matcher = /(\d+(?:\.\d+)?)\s*(?:g|gram|grams|그램|克|グラム)/gi;
+        var match = matcher.exec(text);
+        while (match) {
+          amounts.push(Number(match[1]));
+          match = matcher.exec(text);
+        }
+        return amounts;
+      }
+
+      function parseRecipeImportTimes(value) {
+        var text = normalizeRecipeImportText(value);
+        var colonMatches = text.match(/\d+\s*:\s*\d{1,2}/g);
+        if (colonMatches && colonMatches.length) {
+          return colonMatches.map(parseRecipeImportTimeValue);
+        }
+
+        return text.split(/[\/,，、|\s]+/).map(function (part) {
+          return part.trim();
+        }).filter(Boolean).map(parseRecipeImportTimeValue);
+      }
+
+      function parseRecipeImportTimeValue(value) {
+        var text = normalizeRecipeImportText(value).trim().toLowerCase();
+        var colonMatch = text.match(/(\d+)\s*:\s*(\d{1,2})/);
+        if (colonMatch) {
+          var minutes = Number(colonMatch[1]);
+          var seconds = Number(colonMatch[2]);
+          return Number.isFinite(minutes) && Number.isFinite(seconds) && seconds < 60 ? minutes * 60 + seconds : NaN;
+        }
+
+        var minuteMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:분|m|min|minute|minutes|分)/);
+        var secondMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:초|s|sec|secs|second|seconds|秒)/);
+        if (minuteMatch || secondMatch) {
+          var parsedMinutes = minuteMatch ? Number(minuteMatch[1]) : 0;
+          var parsedSeconds = secondMatch ? Number(secondMatch[1]) : 0;
+          return Number.isFinite(parsedMinutes) && Number.isFinite(parsedSeconds) ? Math.floor(parsedMinutes * 60 + parsedSeconds) : NaN;
+        }
+
+        var numberMatch = text.match(/^\s*(\d+(?:\.\d+)?)\s*$/);
+        return numberMatch ? Math.floor(Number(numberMatch[1])) : NaN;
+      }
+
+      function normalizeRecipeImportText(value) {
+        return String(value || "").replace(/[０-９]/g, function (character) {
+          return String(character.charCodeAt(0) - 65296);
+        });
+      }
+
+      function isRecipeImportCommentLine(line) {
+        return /^(#|\/\/|;)/.test(line);
+      }
+
+      function createDefaultRecipeImportStartTimes(count) {
+        var times = [];
+        for (var index = 0; index < count; index += 1) {
+          times.push(index * 30);
+        }
+        return times;
+      }
+
+      function inferRecipeImportEndSeconds(stages) {
+        return Math.max(FINISH_WARNING_SECONDS + 1, stages[stages.length - 1].startSeconds + 40);
+      }
+
+      function getRecipeImportFileBaseName(fileName) {
+        if (!fileName || typeof fileName !== "string") {
+          return "";
+        }
+        return fileName.replace(/\.[^/.]+$/, "").trim();
+      }
+
+      function showImportStatus(message, isError) {
+        elements.importStatus.textContent = message || "";
+        elements.importStatus.classList.toggle("error", Boolean(isError));
+        elements.importStatus.classList.toggle("success", Boolean(message) && !isError);
+      }
+
+      function findCustomPresetByName(categoryId, name) {
+        var normalized = name.trim().toLocaleLowerCase();
+        for (var index = 0; index < appState.customPresets.length; index += 1) {
+          var preset = appState.customPresets[index];
+          if (preset.categoryId === categoryId && preset.name.toLocaleLowerCase() === normalized) {
+            return preset;
+          }
+        }
+        return null;
+      }
+
+      function createCustomPresetId() {
+        return "custom-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+      }
+
+      function createRecipeSummary(settings, prefix) {
+        var amounts = settings.stages.map(function (stage) {
+          return formatGrams(stage.amountGrams, 1).replace("g", "");
+        }).join(" / ");
+        return amounts + "g · " + t("endShort") + " " + secondsToTimeString(settings.extractionEndSeconds);
+      }
+
+      function createDefaultSettings() {
+        return cloneSettings(DEFAULT_SETTINGS);
+      }
+
+      function cloneSettings(settings) {
+        return {
+          version: SETTINGS_VERSION,
+          extractionEndSeconds: Number(settings.extractionEndSeconds),
+          stages: settings.stages.map(function (stage) {
+            return {
+              startSeconds: Number(stage.startSeconds),
+              amountGrams: Number(stage.amountGrams)
+            };
+          }),
+          soundEnabled: Boolean(settings.soundEnabled),
+          vibrationEnabled: Boolean(settings.vibrationEnabled),
+          language: normalizeLanguage(settings.language),
+          presetName: typeof settings.presetName === "string" ? settings.presetName : t("userSettings"),
+          prepNote: typeof settings.prepNote === "string" ? settings.prepNote : ""
+        };
+      }
+
+      function loadSettings() {
+        var fallback = createDefaultSettings();
+        try {
+          var raw = window.localStorage.getItem(STORAGE_KEY) || window.localStorage.getItem(LEGACY_STORAGE_KEY);
+          if (!raw) {
+            return fallback;
+          }
+          var parsed = JSON.parse(raw);
+          if (parsed && parsed.version === 1) {
+            return migrateLegacySettings(parsed);
+          }
+          if (!isValidSettingsShape(parsed)) {
+            return fallback;
+          }
+          return sanitizeSettings(parsed);
+        } catch (error) {
+          return fallback;
+        }
+      }
+
+      function loadCustomPresets() {
+        try {
+          var raw = window.localStorage.getItem(CUSTOM_PRESETS_STORAGE_KEY);
+          if (!raw) {
+            return [];
+          }
+          var parsed = JSON.parse(raw);
+          if (!Array.isArray(parsed)) {
+            return [];
+          }
+          return parsed.map(sanitizeCustomPreset).filter(Boolean).slice(0, 50);
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function saveCustomPresets() {
+        try {
+          window.localStorage.setItem(CUSTOM_PRESETS_STORAGE_KEY, JSON.stringify(appState.customPresets));
+        } catch (error) {
+          showGlobalError(t("saveStorageError"));
+        }
+      }
+
+      function sanitizeCustomPreset(value) {
+        if (!value || typeof value !== "object") {
+          return null;
+        }
+        var categoryId = value.categoryId === "ice" ? "ice" : "hot";
+        var name = typeof value.name === "string" ? value.name.trim().slice(0, 28) : "";
+        var stages = Array.isArray(value.stages) ? value.stages.slice(0, MAX_STAGES).map(function (stage) {
+          return {
+            startSeconds: sanitizeNonNegativeNumber(stage.startSeconds, NaN),
+            amountGrams: sanitizePositiveNumber(stage.amountGrams, NaN)
+          };
+        }).filter(function (stage) {
+          return Number.isFinite(stage.startSeconds) && Number.isFinite(stage.amountGrams);
+        }) : [];
+
+        if (!name || stages.length < MIN_STAGES) {
+          return null;
+        }
+
+        return {
+          id: typeof value.id === "string" && value.id ? value.id : createCustomPresetId(),
+          categoryId: categoryId,
+          name: name,
+          summary: typeof value.summary === "string" && value.summary ? value.summary : createRecipeSummary({
+            extractionEndSeconds: sanitizeNonNegativeNumber(value.extractionEndSeconds, DEFAULT_SETTINGS.extractionEndSeconds),
+            stages: stages
+          }, "나만의"),
+          prepNote: typeof value.prepNote === "string" ? value.prepNote.slice(0, 240) : "",
+          extractionEndSeconds: sanitizeNonNegativeNumber(value.extractionEndSeconds, DEFAULT_SETTINGS.extractionEndSeconds),
+          stages: stages,
+          isCustom: true,
+          updatedAt: sanitizeNonNegativeNumber(value.updatedAt, Date.now())
+        };
+      }
+
+      function isValidSettingsShape(value) {
+        return Boolean(
+          value &&
+          value.version === SETTINGS_VERSION &&
+          isStoredNonNegativeNumber(value.extractionEndSeconds) &&
+          Array.isArray(value.stages) &&
+          value.stages.length >= MIN_STAGES &&
+          value.stages.length <= MAX_STAGES &&
+          value.stages.every(function (stage) {
+            return Boolean(
+              stage &&
+              isStoredNonNegativeNumber(stage.startSeconds) &&
+              isStoredNonNegativeNumber(stage.amountGrams)
+            );
+          })
+        );
+      }
+
+      function migrateLegacySettings(value) {
+        if (!value || !Array.isArray(value.stages)) {
+          return createDefaultSettings();
+        }
+
+        return sanitizeSettings({
+          version: SETTINGS_VERSION,
+          extractionEndSeconds: value.extractionEndSeconds,
+          stages: value.stages.slice(0, MAX_STAGES).map(function (stage, index) {
+            var legacyAmount = Number(stage.durationSeconds) * Number(stage.flowRate);
+            return {
+              startSeconds: Number(stage.startSeconds),
+              amountGrams: Number.isFinite(legacyAmount) && legacyAmount > 0 ? legacyAmount : DEFAULT_SETTINGS.stages[Math.min(index, DEFAULT_SETTINGS.stages.length - 1)].amountGrams
+            };
+          }),
+          soundEnabled: value.soundEnabled,
+          vibrationEnabled: value.vibrationEnabled,
+          language: normalizeLanguage(value.language),
+          presetName: t("userSettings"),
+          prepNote: ""
+        });
+      }
+
+      function sanitizeSettings(value) {
+        var sanitized = {
+          version: SETTINGS_VERSION,
+          extractionEndSeconds: sanitizeNonNegativeNumber(value.extractionEndSeconds, DEFAULT_SETTINGS.extractionEndSeconds),
+          stages: [],
+          soundEnabled: Boolean(value.soundEnabled),
+          vibrationEnabled: Boolean(value.vibrationEnabled),
+          language: normalizeLanguage(value.language),
+          presetName: typeof value.presetName === "string" ? value.presetName : t("userSettings"),
+          prepNote: typeof value.prepNote === "string" ? value.prepNote : ""
+        };
+
+        value.stages.slice(0, MAX_STAGES).forEach(function (stage, index) {
+          sanitized.stages.push({
+            startSeconds: sanitizeNonNegativeNumber(stage.startSeconds, index * 30),
+            amountGrams: sanitizeNonNegativeNumber(stage.amountGrams, DEFAULT_SETTINGS.stages[Math.min(index, DEFAULT_SETTINGS.stages.length - 1)].amountGrams)
+          });
+        });
+
+        if (sanitized.stages.length === 0) {
+          sanitized.stages = createDefaultSettings().stages;
+        }
+        return sanitized;
+      }
+
+      function saveSettings() {
+        try {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.settings));
+        } catch (error) {
+          // localStorage가 차단되어도 앱 사용은 계속되어야 한다.
+        }
+      }
+
+      function populateStaticTimeSelectors() {
+        elements.endMinutes.innerHTML = createTimeSelectOptions(TIME_SELECTOR_MAX_MINUTES, 0);
+        elements.endSeconds.innerHTML = createTimeSelectOptions(59, 0);
+      }
+
+      function createTimeSelectOptions(maxValue, selectedValue) {
+        var safeMax = Math.max(0, Math.floor(Number(maxValue) || 0));
+        var safeSelected = Math.max(0, Math.floor(Number(selectedValue) || 0));
+        var options = [];
+        var optionCount = Math.max(safeMax, safeSelected);
+        for (var value = 0; value <= optionCount; value += 1) {
+          options.push('<option value="' + value + '"' + (value === safeSelected ? " selected" : "") + ">" + pad2(value) + "</option>");
+        }
+        return options.join("");
+      }
+
+      function setTimeSelectValue(select, value, maxValue) {
+        var safeValue = Math.max(0, Math.floor(Number(value) || 0));
+        if (!select.querySelector('option[value="' + safeValue + '"]')) {
+          select.innerHTML = createTimeSelectOptions(Math.max(maxValue, safeValue), safeValue);
+        }
+        select.value = String(safeValue);
+      }
+
+      function renderSetupScreen() {
+        var endParts = secondsToParts(appState.settings.extractionEndSeconds);
+        setTimeSelectValue(elements.endMinutes, endParts.minutes, TIME_SELECTOR_MAX_MINUTES);
+        setTimeSelectValue(elements.endSeconds, endParts.seconds, 59);
+        elements.soundEnabled.checked = appState.settings.soundEnabled;
+        elements.vibrationEnabled.checked = appState.settings.vibrationEnabled;
+        elements.customPresetNote.value = appState.settings.prepNote || "";
+        renderStageCards();
+        updateRecipeNote();
+        clearValidationState();
+        updateAddStageButton();
+        saveSettings();
+      }
+
+      function updateRecipeNote() {
+        var note = appState.settings.prepNote || "";
+        if (!note) {
+          elements.recipeNote.textContent = "";
+          elements.recipeNote.classList.add("hidden");
+          return;
+        }
+        elements.recipeNote.textContent = note;
+        elements.recipeNote.classList.remove("hidden");
+      }
+
+      function renderStageCards() {
+        elements.stageList.innerHTML = "";
+        var cumulativeAmounts = getCumulativeAmounts(appState.settings.stages);
+
+        appState.settings.stages.forEach(function (stage, index) {
+          var card = document.createElement("article");
+          card.className = "stage-card";
+          card.dataset.stageIndex = String(index);
+
+          var startParts = secondsToParts(stage.startSeconds);
+          var amount = calculateStageAmount(stage);
+          var canDelete = appState.settings.stages.length > MIN_STAGES;
+
+          card.innerHTML = [
+            '<div class="stage-head">',
+            '  <h3 class="stage-title">' + formatStageName(index + 1) + '</h3>',
+            '  <button class="btn icon danger delete-stage-button" type="button" aria-label="' + t("stageDeleteAria", { stage: formatStageName(index + 1) }) + '"' + (canDelete ? "" : " disabled") + '>×</button>',
+            '</div>',
+            '<div class="stage-grid">',
+            '  <div class="stage-time-grid">',
+            '    <div class="field">',
+            '      <label for="stage-' + index + '-minutes">' + t("startMinute") + '</label>',
+            '      <select id="stage-' + index + '-minutes" class="stage-input" data-field="minutes" data-stage-index="' + index + '">' + createTimeSelectOptions(TIME_SELECTOR_MAX_MINUTES, startParts.minutes) + '</select>',
+            '    </div>',
+            '    <div class="field">',
+            '      <label for="stage-' + index + '-seconds">' + t("startSecond") + '</label>',
+            '      <select id="stage-' + index + '-seconds" class="stage-input" data-field="seconds" data-stage-index="' + index + '">' + createTimeSelectOptions(59, startParts.seconds) + '</select>',
+            '    </div>',
+            '  </div>',
+            '  <div class="stage-number-grid">',
+            '    <div class="field field-unit">',
+            '      <label for="stage-' + index + '-amount">' + t("pouringAmount") + '</label>',
+            '      <input id="stage-' + index + '-amount" class="stage-input" data-field="amount" data-stage-index="' + index + '" type="number" inputmode="decimal" min="0" step="1" autocomplete="off" value="' + formatNumberInput(stage.amountGrams) + '">',
+            '      <span>g</span>',
+            '    </div>',
+            '  </div>',
+            '</div>',
+            '<div class="computed" aria-live="polite">',
+            '  <span>' + t("currentPouringAmount", { amount: formatGrams(amount, 1) }) + '</span>',
+            '  <span>' + t("cumulativeAmount", { amount: formatGrams(cumulativeAmounts[index], 1) }) + '</span>',
+            '</div>',
+            '<p class="stage-error" role="alert"></p>'
+          ].join("");
+
+          elements.stageList.appendChild(card);
+        });
+      }
+
+      function handleSetupInputChange(event) {
+        readSettingsFromInputs();
+        saveSettings();
+
+        if (event.target.classList.contains("stage-input")) {
+          updateComputedAmountsOnly();
+        } else if (event.target === elements.endMinutes || event.target === elements.endSeconds) {
+          clearValidationState();
+        }
+      }
+
+      function updateComputedAmountsOnly() {
+        var cumulativeAmounts = getCumulativeAmounts(appState.settings.stages);
+        var cards = elements.stageList.querySelectorAll(".stage-card");
+        Array.prototype.forEach.call(cards, function (card, index) {
+          var computed = card.querySelector(".computed");
+          if (!computed) {
+            return;
+          }
+          var amount = calculateStageAmount(appState.settings.stages[index]);
+          computed.innerHTML = '<span>' + t("currentPouringAmount", { amount: formatGrams(amount, 1) }) + '</span><span>' + t("cumulativeAmount", { amount: formatGrams(cumulativeAmounts[index], 1) }) + '</span>';
+        });
+        clearValidationState();
+      }
+
+      function readSettingsFromInputs() {
+        var endMinutes = parseWholeNumber(elements.endMinutes.value);
+        var endSeconds = parseWholeNumber(elements.endSeconds.value);
+        appState.settings.extractionEndSeconds = combineTimeParts(endMinutes, endSeconds);
+        appState.settings.soundEnabled = elements.soundEnabled.checked;
+        appState.settings.vibrationEnabled = elements.vibrationEnabled.checked;
+
+        var nextStages = appState.settings.stages.map(function (stage, index) {
+          var minuteInput = findStageInput(index, "minutes");
+          var secondInput = findStageInput(index, "seconds");
+          var amountInput = findStageInput(index, "amount");
+          return {
+            startSeconds: combineTimeParts(parseWholeNumber(minuteInput.value), parseWholeNumber(secondInput.value)),
+            amountGrams: parseDecimalNumber(amountInput.value)
+          };
+        });
+
+        appState.settings.stages = nextStages;
+      }
+
+      function findStageInput(index, field) {
+        return elements.stageList.querySelector('[data-stage-index="' + index + '"][data-field="' + field + '"]');
+      }
+
+      function addStage() {
+        readSettingsFromInputs();
+        if (appState.settings.stages.length >= MAX_STAGES) {
+          updateAddStageButton();
+          return;
+        }
+
+        var lastStage = appState.settings.stages[appState.settings.stages.length - 1];
+        var newStart = Math.max(0, Math.floor(lastStage.startSeconds + 30));
+        if (newStart >= appState.settings.extractionEndSeconds) {
+          newStart = Math.max(0, Math.floor(appState.settings.extractionEndSeconds - 10));
+        }
+
+        appState.settings.stages.push({
+          startSeconds: newStart,
+          amountGrams: isFiniteNumber(lastStage.amountGrams) ? lastStage.amountGrams : 0
+        });
+
+        renderSetupScreen();
+        focusStage(appState.settings.stages.length - 1);
+      }
+
+      function deleteStage(index) {
+        readSettingsFromInputs();
+        if (appState.settings.stages.length <= MIN_STAGES) {
+          return;
+        }
+        appState.settings.stages.splice(index, 1);
+        renderSetupScreen();
+      }
+
+      function updateAddStageButton() {
+        elements.addStageButton.disabled = appState.settings.stages.length >= MAX_STAGES;
+      }
+
+      function focusStage(index) {
+        window.requestAnimationFrame(function () {
+          var input = findStageInput(index, "minutes");
+          if (input) {
+            input.focus();
+            input.scrollIntoView({ block: "center", behavior: "smooth" });
+          }
+        });
+      }
+
+      elements.stageList.addEventListener("input", function (event) {
+        if (event.target.classList.contains("stage-input")) {
+          handleSetupInputChange(event);
+        }
+      });
+
+      elements.stageList.addEventListener("change", function (event) {
+        if (event.target.classList.contains("stage-input")) {
+          handleSetupInputChange(event);
+        }
+      });
+
+      elements.stageList.addEventListener("click", function (event) {
+        var button = event.target.closest(".delete-stage-button");
+        if (!button) {
+          return;
+        }
+        var card = button.closest(".stage-card");
+        deleteStage(Number(card.dataset.stageIndex));
+      });
+
+      function clearValidationState() {
+        elements.globalError.textContent = "";
+        elements.globalError.classList.remove("visible");
+        [elements.endMinutes, elements.endSeconds].forEach(clearInputError);
+        var inputs = elements.stageList.querySelectorAll("input, select");
+        Array.prototype.forEach.call(inputs, clearInputError);
+        var errors = elements.stageList.querySelectorAll(".stage-error");
+        Array.prototype.forEach.call(errors, function (errorElement) {
+          errorElement.textContent = "";
+          errorElement.classList.remove("visible");
+        });
+      }
+
+      function clearInputError(input) {
+        input.removeAttribute("aria-invalid");
+      }
+
+      function setInputError(input) {
+        if (input) {
+          input.setAttribute("aria-invalid", "true");
+        }
+      }
+
+      function setStageError(index, message) {
+        var card = elements.stageList.querySelector('[data-stage-index="' + index + '"]');
+        if (!card) {
+          return;
+        }
+        var errorElement = card.querySelector(".stage-error");
+        errorElement.textContent = message;
+        errorElement.classList.add("visible");
+      }
+
+      function showGlobalError(message) {
+        elements.globalError.textContent = message;
+        elements.globalError.classList.add("visible");
+      }
+
+      function validateSettings() {
+        clearValidationState();
+        readSettingsFromInputs();
+
+        var stages = appState.settings.stages;
+        if (stages.length < MIN_STAGES) {
+          return createValidationError(t("minStagesError"), elements.addStageButton);
+        }
+        if (stages.length > MAX_STAGES) {
+          return createValidationError(t("maxStagesError"), elements.addStageButton);
+        }
+
+        var endMinutesValid = validateWholeNumberInput(elements.endMinutes.value);
+        var endSecondsValid = validateWholeNumberInput(elements.endSeconds.value);
+        if (!endMinutesValid || !endSecondsValid || parseWholeNumber(elements.endSeconds.value) > 59) {
+          setInputError(elements.endMinutes);
+          setInputError(elements.endSeconds);
+          return createValidationError(t("endTimeInvalid"), elements.endMinutes);
+        }
+
+        if (!isFiniteNumber(appState.settings.extractionEndSeconds) || appState.settings.extractionEndSeconds < FINISH_WARNING_SECONDS) {
+          setInputError(elements.endMinutes);
+          setInputError(elements.endSeconds);
+          return createValidationError(t("endTimeMin"), elements.endMinutes);
+        }
+
+        for (var index = 0; index < stages.length; index += 1) {
+          var stage = stages[index];
+          var stageNumber = index + 1;
+          var minuteInput = findStageInput(index, "minutes");
+          var secondInput = findStageInput(index, "seconds");
+          var amountInput = findStageInput(index, "amount");
+
+          if (!validateWholeNumberInput(minuteInput.value) || !validateWholeNumberInput(secondInput.value) || parseWholeNumber(secondInput.value) > 59) {
+            setInputError(minuteInput);
+            setInputError(secondInput);
+            return createValidationError(t("stageStartInvalid", { stage: formatStageName(stageNumber) }), minuteInput, index);
+          }
+
+          if (!isFiniteNumber(stage.startSeconds) || stage.startSeconds < 0) {
+            setInputError(minuteInput);
+            return createValidationError(t("stageStartNonNegative", { stage: formatStageName(stageNumber) }), minuteInput, index);
+          }
+
+          if (index > 0 && stage.startSeconds <= stages[index - 1].startSeconds) {
+            setInputError(minuteInput);
+            setInputError(secondInput);
+            return createValidationError(t("stageStartLater", { stage: formatStageName(stageNumber), previousStage: formatStageName(index) }), minuteInput, index);
+          }
+
+          if (!validatePositiveDecimalInput(amountInput.value) || stage.amountGrams <= 0) {
+            setInputError(amountInput);
+            return createValidationError(t("stageAmountInvalid", { stage: formatStageName(stageNumber) }), amountInput, index);
+          }
+        }
+
+        var lastStage = stages[stages.length - 1];
+        if (appState.settings.extractionEndSeconds <= lastStage.startSeconds) {
+          setInputError(elements.endMinutes);
+          setInputError(elements.endSeconds);
+          return createValidationError(t("endAfterLast"), elements.endMinutes);
+        }
+
+        return { valid: true };
+      }
+
+      function createValidationError(message, input, stageIndex) {
+        return {
+          valid: false,
+          message: message,
+          input: input,
+          stageIndex: typeof stageIndex === "number" ? stageIndex : null
+        };
+      }
+
+      function handleValidationError(result) {
+        showGlobalError(result.message);
+        if (result.stageIndex !== null) {
+          setStageError(result.stageIndex, result.message);
+        }
+        if (result.input && typeof result.input.scrollIntoView === "function") {
+          result.input.scrollIntoView({ block: "center", behavior: "smooth" });
+          window.setTimeout(function () {
+            result.input.focus();
+          }, 260);
+        }
+      }
+
+      function startTimer() {
+        if (appState.mode !== "editing") {
+          return;
+        }
+
+        var validation = validateSettings();
+        if (!validation.valid) {
+          handleValidationError(validation);
+          return;
+        }
+
+        appState.activeRecipe = createRecipeFromSettings(appState.settings);
+        appState.mode = "running";
+        appState.triggeredEvents = {};
+        appState.elapsedSeconds = 0;
+        appState.lastRenderedSecond = -1;
+        appState.accumulatedPauseMs = 0;
+        appState.pausedAtPerfMs = 0;
+        appState.startPerfMs = performance.now();
+        appState.speedMultiplier = appState.debugEnabled ? parseFloat(elements.speedSelect.value) || 1 : 1;
+
+        saveSettings();
+        activateAudioContext();
+        requestWakeLock();
+        showTimerScreen();
+        updateTimerFrame();
+      }
+
+      function createRecipeFromSettings(settings) {
+        var stages = settings.stages.map(function (stage, index) {
+          var amount = calculateStageAmount(stage);
+          return {
+            index: index,
+            number: index + 1,
+            startSeconds: Number(stage.startSeconds),
+            amount: amount
+          };
+        });
+        var cumulativeAmounts = getCumulativeAmounts(stages);
+        stages.forEach(function (stage, index) {
+          stage.cumulativeAmount = cumulativeAmounts[index];
+        });
+        return {
+          extractionEndSeconds: Number(settings.extractionEndSeconds),
+          stages: stages,
+          soundEnabled: Boolean(settings.soundEnabled),
+          vibrationEnabled: Boolean(settings.vibrationEnabled),
+          presetName: typeof settings.presetName === "string" ? settings.presetName : "사용자 설정",
+          prepNote: typeof settings.prepNote === "string" ? settings.prepNote : ""
+        };
+      }
+
+      function showTimerScreen() {
+        elements.setupScreen.classList.add("hidden");
+        elements.setupBottomBar.classList.add("hidden");
+        elements.timerScreen.classList.remove("hidden");
+        elements.timerScreen.classList.remove("is-finished");
+        elements.pauseButton.textContent = t("pause");
+        elements.timerStateBadge.textContent = t("running");
+        elements.totalTimeText.textContent = "/ " + secondsToTimeString(appState.activeRecipe.extractionEndSeconds);
+        if (appState.activeRecipe.prepNote) {
+          elements.timerPrepNote.textContent = appState.activeRecipe.prepNote;
+          elements.timerPrepNote.classList.remove("hidden");
+        } else {
+          elements.timerPrepNote.textContent = "";
+          elements.timerPrepNote.classList.add("hidden");
+        }
+        applyTimerTheme(READY_THEME);
+      }
+
+      function updateTimerFrame() {
+        if (appState.mode !== "running") {
+          return;
+        }
+
+        var rawElapsedMs = performance.now() - appState.startPerfMs - appState.accumulatedPauseMs;
+        var elapsedSeconds = Math.max(0, rawElapsedMs / 1000 * appState.speedMultiplier);
+        appState.elapsedSeconds = Math.min(elapsedSeconds, appState.activeRecipe.extractionEndSeconds);
+
+        if (appState.elapsedSeconds >= appState.activeRecipe.extractionEndSeconds) {
+          finishTimer();
+          return;
+        }
+
+        renderTimer(appState.elapsedSeconds);
+        appState.rafId = window.requestAnimationFrame(updateTimerFrame);
+      }
+
+      function renderTimer(elapsedSeconds) {
+        var recipe = appState.activeRecipe;
+        var roundedElapsed = Math.floor(elapsedSeconds);
+        var progress = Math.min(100, Math.max(0, elapsedSeconds / recipe.extractionEndSeconds * 100));
+        var isFinishWarning = elapsedSeconds >= Math.max(0, recipe.extractionEndSeconds - FINISH_WARNING_SECONDS);
+        var activeStage = getCurrentStage(elapsedSeconds, recipe.stages);
+        var nextStage = getNextStage(elapsedSeconds, recipe.stages);
+        var displayStage = activeStage || nextStage || recipe.stages[recipe.stages.length - 1];
+
+        elements.elapsedTimeText.textContent = secondsToTimeString(elapsedSeconds);
+        elements.progressBar.style.width = progress.toFixed(2) + "%";
+
+        if (isFinishWarning) {
+          var remaining = Math.max(1, Math.ceil(recipe.extractionEndSeconds - elapsedSeconds));
+          renderFinishWarning(remaining);
+        } else if (!activeStage && nextStage) {
+          renderReadyState(nextStage, elapsedSeconds);
+        } else if (activeStage) {
+          renderStageState(activeStage, nextStage, elapsedSeconds);
+        }
+
+        updateTimerInfo(displayStage, activeStage, nextStage, elapsedSeconds);
+        if (isFinishWarning) {
+          triggerFinishWarningEvent(elapsedSeconds);
+        } else {
+          triggerStageEvents(elapsedSeconds);
+        }
+
+        appState.lastRenderedSecond = roundedElapsed;
+      }
+
+      function renderReadyState(nextStage, elapsedSeconds) {
+        var remaining = Math.max(0, nextStage.startSeconds - elapsedSeconds);
+        elements.timerMessage.textContent = t("prepare");
+        elements.timerMessage.classList.remove("long-message");
+        elements.countdownText.textContent = t("readyUntil", { stage: formatStageName(nextStage.number), time: secondsToTimeString(remaining) });
+        applyTimerTheme(READY_THEME);
+      }
+
+      function renderStageState(activeStage, nextStage, elapsedSeconds) {
+        elements.timerMessage.textContent = t("pourMessage", { stage: formatStageName(activeStage.number), amount: formatGrams(activeStage.amount, 0) });
+        elements.timerMessage.classList.remove("long-message");
+        elements.countdownText.textContent = "";
+        applyTimerTheme(STAGE_THEMES[activeStage.index % STAGE_THEMES.length]);
+
+        if (nextStage) {
+          elements.nextStageInfo.textContent = secondsToTimeString(Math.max(0, nextStage.startSeconds - elapsedSeconds));
+        } else {
+          elements.nextStageInfo.textContent = t("lastStage");
+        }
+      }
+
+      function renderFinishWarning(remaining) {
+        elements.timerMessage.textContent = t("finishWarning");
+        elements.timerMessage.classList.add("long-message");
+        elements.countdownText.textContent = String(remaining);
+        applyTimerTheme(WARNING_THEME);
+      }
+
+      function updateTimerInfo(displayStage, activeStage, nextStage, elapsedSeconds) {
+        var currentLabel = activeStage ? formatStageName(activeStage.number) : t("ready");
+        elements.currentStageInfo.textContent = currentLabel;
+        elements.currentAmountInfo.textContent = formatGrams(displayStage ? displayStage.amount : 0, 0);
+        elements.cumulativeAmountInfo.textContent = formatGrams(activeStage ? activeStage.cumulativeAmount : 0, 0);
+
+        if (!activeStage && nextStage) {
+          elements.nextStageInfo.textContent = secondsToTimeString(Math.max(0, nextStage.startSeconds - elapsedSeconds));
+        } else if (nextStage) {
+          elements.nextStageInfo.textContent = secondsToTimeString(Math.max(0, nextStage.startSeconds - elapsedSeconds));
+        } else {
+          elements.nextStageInfo.textContent = t("lastStage");
+        }
+      }
+
+      function triggerStageEvents(elapsedSeconds) {
+        appState.activeRecipe.stages.forEach(function (stage) {
+          var key = "stage-" + stage.index;
+          if (elapsedSeconds >= stage.startSeconds && !appState.triggeredEvents[key]) {
+            appState.triggeredEvents[key] = true;
+            playNotification("stage");
+            vibrate([90]);
+          }
+        });
+      }
+
+      function triggerFinishWarningEvent(elapsedSeconds) {
+        var warningAt = Math.max(0, appState.activeRecipe.extractionEndSeconds - FINISH_WARNING_SECONDS);
+        if (elapsedSeconds >= warningAt && !appState.triggeredEvents.finishWarning) {
+          appState.triggeredEvents.finishWarning = true;
+          playNotification("warning");
+          vibrate([120, 60, 120]);
+        }
+      }
+
+      function finishTimer() {
+        if (appState.mode === "finished") {
+          return;
+        }
+        cancelAnimationFrameIfNeeded();
+        appState.mode = "finished";
+        appState.elapsedSeconds = appState.activeRecipe.extractionEndSeconds;
+        elements.elapsedTimeText.textContent = secondsToTimeString(appState.elapsedSeconds);
+        elements.progressBar.style.width = "100%";
+        elements.timerMessage.textContent = t("finishedMessage");
+        elements.timerMessage.classList.add("long-message");
+        elements.countdownText.textContent = "";
+        elements.timerStateBadge.textContent = t("finishedState");
+        elements.timerScreen.classList.add("is-finished");
+        elements.currentStageInfo.textContent = t("done");
+        elements.nextStageInfo.textContent = t("done");
+        applyTimerTheme(FINISHED_THEME);
+        if (!appState.triggeredEvents.finished) {
+          appState.triggeredEvents.finished = true;
+          playNotification("finished");
+          vibrate([180, 90, 180, 90, 260]);
+        }
+        releaseWakeLock();
+      }
+
+      function getCurrentStage(elapsedSeconds, stages) {
+        var current = null;
+        stages.forEach(function (stage) {
+          if (elapsedSeconds >= stage.startSeconds) {
+            current = stage;
+          }
+        });
+        return current;
+      }
+
+      function getNextStage(elapsedSeconds, stages) {
+        for (var index = 0; index < stages.length; index += 1) {
+          if (elapsedSeconds < stages[index].startSeconds) {
+            return stages[index];
+          }
+        }
+        return null;
+      }
+
+      function applyTimerTheme(theme) {
+        elements.timerScreen.style.setProperty("--timer-bg", theme.bg);
+        elements.timerScreen.style.setProperty("--timer-fg", theme.fg);
+        document.querySelector('meta[name="theme-color"]').setAttribute("content", theme.bg);
+      }
+
+      function togglePause() {
+        if (appState.mode === "running") {
+          pauseTimer();
+        } else if (appState.mode === "paused") {
+          resumeTimer();
+        }
+      }
+
+      function pauseTimer() {
+        if (appState.mode !== "running") {
+          return;
+        }
+        appState.mode = "paused";
+        appState.pausedAtPerfMs = performance.now();
+        cancelAnimationFrameIfNeeded();
+        elements.pauseButton.textContent = t("continue");
+        elements.timerStateBadge.textContent = t("paused");
+        releaseWakeLock();
+      }
+
+      function resumeTimer() {
+        if (appState.mode !== "paused") {
+          return;
+        }
+        appState.accumulatedPauseMs += performance.now() - appState.pausedAtPerfMs;
+        appState.pausedAtPerfMs = 0;
+        appState.mode = "running";
+        elements.pauseButton.textContent = t("pause");
+        elements.timerStateBadge.textContent = t("running");
+        requestWakeLock();
+        updateTimerFrame();
+      }
+
+      function requestTimerReset() {
+        if (appState.mode === "running" || appState.mode === "paused") {
+          openModal({
+            title: t("resetTimerTitle"),
+            message: t("resetTimerMessage"),
+            confirmText: t("reset"),
+            confirmClass: "danger",
+            onConfirm: resetTimerToSetup
+          });
+        } else {
+          resetTimerToSetup();
+        }
+      }
+
+      function resetTimerToSetup() {
+        cancelAnimationFrameIfNeeded();
+        releaseWakeLock();
+        appState.mode = "editing";
+        appState.activeRecipe = null;
+        appState.elapsedSeconds = 0;
+        elements.timerScreen.classList.add("hidden");
+        elements.timerScreen.classList.remove("is-finished");
+        elements.setupScreen.classList.remove("hidden");
+        elements.setupBottomBar.classList.remove("hidden");
+        document.querySelector('meta[name="theme-color"]').setAttribute("content", "#6f4e37");
+        renderSetupScreen();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function restartSameRecipe() {
+        if (!appState.activeRecipe) {
+          returnToSetup();
+          return;
+        }
+        cancelAnimationFrameIfNeeded();
+        appState.mode = "running";
+        appState.elapsedSeconds = 0;
+        appState.triggeredEvents = {};
+        appState.accumulatedPauseMs = 0;
+        appState.pausedAtPerfMs = 0;
+        appState.startPerfMs = performance.now();
+        elements.timerScreen.classList.remove("is-finished");
+        elements.timerMessage.classList.remove("long-message");
+        elements.pauseButton.textContent = t("pause");
+        elements.timerStateBadge.textContent = t("running");
+        activateAudioContext();
+        requestWakeLock();
+        updateTimerFrame();
+      }
+
+      function returnToSetup() {
+        resetTimerToSetup();
+      }
+
+      function cancelAnimationFrameIfNeeded() {
+        if (appState.rafId) {
+          window.cancelAnimationFrame(appState.rafId);
+          appState.rafId = null;
+        }
+      }
+
+      function activateAudioContext() {
+        if (!appState.settings.soundEnabled) {
+          return;
+        }
+        try {
+          var AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContextClass) {
+            return;
+          }
+          if (!appState.audioContext) {
+            appState.audioContext = new AudioContextClass();
+          }
+          if (appState.audioContext.state === "suspended") {
+            appState.audioContext.resume();
+          }
+        } catch (error) {
+          appState.audioContext = null;
+        }
+      }
+
+      function playNotification(type) {
+        if (!appState.activeRecipe || !appState.activeRecipe.soundEnabled) {
+          return;
+        }
+        activateAudioContext();
+        if (!appState.audioContext) {
+          return;
+        }
+        try {
+          if (type === "stage") {
+            playToneSequence([660, 880], 0.075, 0.055);
+          } else if (type === "warning") {
+            playToneSequence([520, 420, 520], 0.08, 0.045);
+          } else if (type === "finished") {
+            playToneSequence([660, 830, 990, 1180], 0.09, 0.045);
+          }
+        } catch (error) {
+          // 오디오가 차단되더라도 타이머 동작은 유지한다.
+        }
+      }
+
+      function playToneSequence(frequencies, duration, gap) {
+        var context = appState.audioContext;
+        var now = context.currentTime;
+        frequencies.forEach(function (frequency, index) {
+          var start = now + index * (duration + gap);
+          var oscillator = context.createOscillator();
+          var gain = context.createGain();
+          oscillator.type = "sine";
+          oscillator.frequency.setValueAtTime(frequency, start);
+          gain.gain.setValueAtTime(0.0001, start);
+          gain.gain.exponentialRampToValueAtTime(0.18, start + 0.012);
+          gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+          oscillator.connect(gain);
+          gain.connect(context.destination);
+          oscillator.start(start);
+          oscillator.stop(start + duration + 0.02);
+        });
+      }
+
+      function vibrate(pattern) {
+        var vibrationEnabled = appState.activeRecipe ? appState.activeRecipe.vibrationEnabled : appState.settings.vibrationEnabled;
+        if (!vibrationEnabled || !navigator.vibrate) {
+          return;
+        }
+        try {
+          navigator.vibrate(pattern);
+        } catch (error) {
+          // 미지원 브라우저에서는 조용히 무시한다.
+        }
+      }
+
+      function requestWakeLock() {
+        if (!("wakeLock" in navigator) || !navigator.wakeLock || appState.mode !== "running") {
+          updateWakeLockHint();
+          return;
+        }
+        navigator.wakeLock.request("screen").then(function (wakeLock) {
+          appState.wakeLock = wakeLock;
+          appState.wakeLock.addEventListener("release", function () {
+            appState.wakeLock = null;
+            updateWakeLockHint();
+          });
+          updateWakeLockHint();
+        }).catch(function () {
+          appState.wakeLock = null;
+          updateWakeLockHint();
+        });
+      }
+
+      function releaseWakeLock() {
+        if (!appState.wakeLock) {
+          updateWakeLockHint();
+          return;
+        }
+        appState.wakeLock.release().catch(function () {
+          // 이미 해제된 경우도 있다.
+        }).then(function () {
+          appState.wakeLock = null;
+          updateWakeLockHint();
+        });
+      }
+
+      function updateWakeLockHint() {
+        if (!("wakeLock" in navigator)) {
+          elements.wakeLockHint.textContent = t("wakeKeepScreen");
+        } else if (appState.wakeLock) {
+          elements.wakeLockHint.textContent = t("wakeActive");
+        } else {
+          elements.wakeLockHint.textContent = t("wakeAfterStart");
+        }
+      }
+
+      function resetSettingsToDefault() {
+        var language = appState.settings.language;
+        appState.settings = createDefaultSettings();
+        appState.settings.language = language;
+        elements.languageSelect.value = language;
+        applyTranslations();
+        renderSetupScreen();
+      }
+
+      function openModal(options) {
+        appState.lastFocusedElement = document.activeElement;
+        appState.modalConfirmHandler = options.onConfirm;
+        elements.modalTitle.textContent = options.title || t("confirmTitle");
+        elements.modalMessage.textContent = options.message || t("confirmMessage");
+        elements.modalConfirmButton.textContent = options.confirmText || t("confirm");
+        elements.modalConfirmButton.className = "btn " + (options.confirmClass || "primary");
+        elements.modalBackdrop.classList.add("open");
+        elements.modalConfirmButton.focus();
+      }
+
+      function closeModal() {
+        elements.modalBackdrop.classList.remove("open");
+        appState.modalConfirmHandler = null;
+        if (appState.lastFocusedElement && typeof appState.lastFocusedElement.focus === "function") {
+          appState.lastFocusedElement.focus();
+        }
+      }
+
+      function confirmModal() {
+        var handler = appState.modalConfirmHandler;
+        closeModal();
+        if (typeof handler === "function") {
+          handler();
+        }
+      }
+
+      function calculateStageAmount(stage) {
+        var amount = Number(stage.amountGrams);
+        return isFiniteNumber(amount) ? amount : 0;
+      }
+
+      function getCumulativeAmounts(stages) {
+        var total = 0;
+        return stages.map(function (stage) {
+          total += calculateStageAmount(stage);
+          return total;
+        });
+      }
+
+      function parseWholeNumber(value) {
+        if (value === "" || value === null || typeof value === "undefined") {
+          return NaN;
+        }
+        var parsed = Number(value);
+        if (!Number.isFinite(parsed) || Math.floor(parsed) !== parsed) {
+          return NaN;
+        }
+        return parsed;
+      }
+
+      function parseDecimalNumber(value) {
+        if (value === "" || value === null || typeof value === "undefined") {
+          return NaN;
+        }
+        var parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : NaN;
+      }
+
+      function validateWholeNumberInput(value) {
+        var parsed = parseWholeNumber(value);
+        return Number.isFinite(parsed) && parsed >= 0;
+      }
+
+      function validatePositiveDecimalInput(value) {
+        var parsed = parseDecimalNumber(value);
+        return Number.isFinite(parsed) && parsed > 0;
+      }
+
+      function combineTimeParts(minutes, seconds) {
+        if (!Number.isFinite(minutes) || !Number.isFinite(seconds)) {
+          return NaN;
+        }
+        return minutes * 60 + seconds;
+      }
+
+      function secondsToParts(totalSeconds) {
+        var safeSeconds = Math.max(0, Math.floor(Number(totalSeconds) || 0));
+        return {
+          minutes: Math.floor(safeSeconds / 60),
+          seconds: safeSeconds % 60
+        };
+      }
+
+      function secondsToTimeString(totalSeconds) {
+        var safeSeconds = Math.max(0, Math.floor(Number(totalSeconds) || 0));
+        var minutes = Math.floor(safeSeconds / 60);
+        var seconds = safeSeconds % 60;
+        return pad2(minutes) + ":" + pad2(seconds);
+      }
+
+      function pad2(value) {
+        return String(Math.max(0, Math.floor(Number(value) || 0))).padStart(2, "0");
+      }
+
+      function formatGrams(value, decimals) {
+        var numeric = Number(value);
+        if (!Number.isFinite(numeric)) {
+          numeric = 0;
+        }
+        var rounded = decimals === 0 ? Math.round(numeric) : Math.round(numeric * 10) / 10;
+        if (Number.isInteger(rounded)) {
+          return String(rounded) + "g";
+        }
+        return rounded.toFixed(decimals) + "g";
+      }
+
+      function formatNumberInput(value) {
+        var numeric = Number(value);
+        return Number.isFinite(numeric) ? String(numeric) : "";
+      }
+
+      function sanitizeNonNegativeNumber(value, fallback) {
+        var numeric = Number(value);
+        return Number.isFinite(numeric) && numeric >= 0 ? numeric : fallback;
+      }
+
+      function sanitizePositiveNumber(value, fallback) {
+        var numeric = Number(value);
+        return Number.isFinite(numeric) && numeric > 0 ? numeric : fallback;
+      }
+
+      function isFiniteNumber(value) {
+        return typeof value === "number" && Number.isFinite(value);
+      }
+
+      function isStoredNonNegativeNumber(value) {
+        return typeof value === "number" && Number.isFinite(value) && value >= 0;
+      }
+
+      function isStoredPositiveNumber(value) {
+        return typeof value === "number" && Number.isFinite(value) && value > 0;
+      }
+    })();
+  </script>
+</body>
+</html>

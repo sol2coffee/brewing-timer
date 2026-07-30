@@ -1,0 +1,16 @@
+# BREWING TIMER TXT MULTIPLE SAMPLE
+
+Recipe Name HOT Basic Sample
+Category HOT
+00:00 00:30 01:00 01:30 02:10
+60 80 80 80
+This recipe is for 20g of coffee. Grind size is 25 clicks on the Comandante C40.
+
+Recipe Name ICE Basic Sample
+Category ICE
+00:00 00:30 01:00 01:30 02:10
+40 50 60 50
+This recipe is for 20g of coffee. Grind size is 25 clicks on the Comandante C40.
+
+# A Recipe Name line starts a new recipe block.
+# Text after the water amount line is saved as Coffee Dose and Prep Notes.
