@@ -1,0 +1,15 @@
+# BREWING TIMER TXT MULTIPLE SAMPLE
+
+Recipe Name HOT Basic Sample
+Category HOT
+00:00 00:30 01:00 01:30 02:10
+60 80 80 80
+
+Recipe Name ICE Basic Sample
+Category ICE
+Prep Note Add 100g ice to the server first
+00:00 00:30 01:00 01:30 02:10
+40 50 60 50
+
+# A Recipe Name line starts a new recipe block.
+# The time and water amount lines after Recipe Name and Category are saved as one recipe.
