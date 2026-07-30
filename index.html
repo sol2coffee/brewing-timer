@@ -966,8 +966,8 @@
               <input id="customPresetName" type="text" maxlength="28" autocomplete="off" placeholder="예: 내 원두 산미용" data-i18n-placeholder="recipeNamePlaceholder">
             </div>
             <div class="field">
-              <label for="customPresetNote" data-i18n="prepNoteLabel">사전 준비 사항</label>
-              <input id="customPresetNote" type="text" maxlength="80" autocomplete="off" placeholder="예: 서버에 얼음 100g을 먼저 넣고 시작하세요" data-i18n-placeholder="prepNotePlaceholder">
+              <label for="customPresetNote" data-i18n="prepNoteLabel">원두량 및 사전준비사항</label>
+              <input id="customPresetNote" type="text" maxlength="240" autocomplete="off" placeholder="예: 원두 20g / 서버에 얼음 100g을 먼저 넣고 시작하세요" data-i18n-placeholder="prepNotePlaceholder">
             </div>
             <div class="custom-preset-actions">
               <button id="saveCustomPresetButton" class="btn secondary" type="button" data-i18n="saveCurrentSettings">현재 설정 저장</button>
@@ -1160,12 +1160,152 @@
         {
           id: "hot",
           label: "HOT",
-          recipes: []
+          recipes: [
+            {
+              id: "built-in-hot-clean-acidity",
+              name: "깔끔 산미 (앱개발자 추천)",
+              prepNote: "원두 20g, 분쇄도 코만단테 C40 28클릭, 물온도 92도",
+              extractionEndSeconds: 130,
+              stages: [
+                { startSeconds: 0, amountGrams: 70 },
+                { startSeconds: 30, amountGrams: 70 },
+                { startSeconds: 60, amountGrams: 80 },
+                { startSeconds: 90, amountGrams: 80 }
+              ]
+            },
+            {
+              id: "built-in-hot-strong-sweetness",
+              name: "짱짱한 단맛 (앱개발자 추천)",
+              prepNote: "원두 20g, 분쇄도 코만단테 C40 28클릭, 물온도 92도",
+              extractionEndSeconds: 150,
+              stages: [
+                { startSeconds: 0, amountGrams: 60 },
+                { startSeconds: 30, amountGrams: 60 },
+                { startSeconds: 60, amountGrams: 60 },
+                { startSeconds: 90, amountGrams: 60 },
+                { startSeconds: 120, amountGrams: 60 }
+              ]
+            },
+            {
+              id: "built-in-hot-anstar-6888",
+              name: "안스타 6888",
+              prepNote: "원두 20g",
+              extractionEndSeconds: 140,
+              stages: [
+                { startSeconds: 0, amountGrams: 60 },
+                { startSeconds: 30, amountGrams: 80 },
+                { startSeconds: 60, amountGrams: 80 },
+                { startSeconds: 90, amountGrams: 80 }
+              ]
+            },
+            {
+              id: "built-in-hot-jeong-484",
+              name: "정인성 484",
+              prepNote: "원두 20g",
+              extractionEndSeconds: 160,
+              stages: [
+                { startSeconds: 0, amountGrams: 40 },
+                { startSeconds: 60, amountGrams: 80 },
+                { startSeconds: 120, amountGrams: 40 }
+              ]
+            },
+            {
+              id: "built-in-hot-jeong-4666",
+              name: "정인성 4666",
+              prepNote: "원두 20g",
+              extractionEndSeconds: 140,
+              stages: [
+                { startSeconds: 0, amountGrams: 40 },
+                { startSeconds: 30, amountGrams: 60 },
+                { startSeconds: 60, amountGrams: 60 },
+                { startSeconds: 90, amountGrams: 60 }
+              ]
+            },
+            {
+              id: "built-in-hot-tetsu-katsuya-ten-pour",
+              name: "테츠 카츠야 텐푸어",
+              prepNote: "원두 20g, 분쇄도 코만단테 C40 40-45클릭, 물온도 95도",
+              extractionEndSeconds: 210,
+              stages: [
+                { startSeconds: 0, amountGrams: 30 },
+                { startSeconds: 30, amountGrams: 30 },
+                { startSeconds: 45, amountGrams: 30 },
+                { startSeconds: 60, amountGrams: 30 },
+                { startSeconds: 75, amountGrams: 30 },
+                { startSeconds: 90, amountGrams: 30 },
+                { startSeconds: 105, amountGrams: 30 },
+                { startSeconds: 120, amountGrams: 30 },
+                { startSeconds: 135, amountGrams: 30 },
+                { startSeconds: 150, amountGrams: 30 }
+              ]
+            },
+            {
+              id: "built-in-hot-anstar-10g",
+              name: "안스타 10g",
+              prepNote: "원두 10g, 분쇄도 850-850마이크론, V60, 물온도 96도",
+              extractionEndSeconds: 180,
+              stages: [
+                { startSeconds: 0, amountGrams: 30 },
+                { startSeconds: 30, amountGrams: 40 },
+                { startSeconds: 60, amountGrams: 40 },
+                { startSeconds: 90, amountGrams: 40 }
+              ]
+            }
+          ]
         },
         {
           id: "ice",
           label: "ICE",
-          recipes: []
+          recipes: [
+            {
+              id: "built-in-ice-clean-acidity",
+              name: "깔끔 산미 (앱개발자 추천)",
+              prepNote: "원두 20g, 분쇄도 코만단테 C40 28클릭, 물온도 92도, 추출전 서버에 얼음 가득, 추출후 스월링 열바퀴 후 새 얼음컵에 따라주기",
+              extractionEndSeconds: 140,
+              stages: [
+                { startSeconds: 0, amountGrams: 50 },
+                { startSeconds: 30, amountGrams: 50 },
+                { startSeconds: 60, amountGrams: 50 },
+                { startSeconds: 90, amountGrams: 50 }
+              ]
+            },
+            {
+              id: "built-in-ice-strong-sweetness",
+              name: "짱짱한 단맛 (앱개발자 추천)",
+              prepNote: "원두 20g, 분쇄도 코만단테 C40 28클릭, 물온도 92도, 추출전 서버에 얼음 가득, 추출후 스월링 열바퀴 후 새 얼음컵에 따라주기",
+              extractionEndSeconds: 140,
+              stages: [
+                { startSeconds: 0, amountGrams: 40 },
+                { startSeconds: 30, amountGrams: 60 },
+                { startSeconds: 60, amountGrams: 50 },
+                { startSeconds: 90, amountGrams: 50 }
+              ]
+            },
+            {
+              id: "built-in-ice-first-meeting-beans",
+              name: "첫만남 원두 레시피 (앱개발자 추천)",
+              prepNote: "원두 20g, 분쇄도 코만단테 C40 25클릭, 물온도 92도, 추출전 서버에 얼음 가득, 추출후 스월링 열바퀴 후 새 얼음컵에 따라주기",
+              extractionEndSeconds: 140,
+              stages: [
+                { startSeconds: 0, amountGrams: 40 },
+                { startSeconds: 30, amountGrams: 50 },
+                { startSeconds: 60, amountGrams: 60 },
+                { startSeconds: 90, amountGrams: 50 }
+              ]
+            },
+            {
+              id: "built-in-ice-anstar-10g",
+              name: "안스타 10g",
+              prepNote: "원두 10g, 분쇄도 850-850마이크론, V60, 물온도 96도, 얼음을 담아둔컵에 커피 따르기",
+              extractionEndSeconds: 120,
+              stages: [
+                { startSeconds: 0, amountGrams: 20 },
+                { startSeconds: 30, amountGrams: 30 },
+                { startSeconds: 60, amountGrams: 30 },
+                { startSeconds: 90, amountGrams: 20 }
+              ]
+            }
+          ]
         }
       ];
 
@@ -1186,8 +1326,8 @@
           recipeCategoryLabel: "레시피 분류",
           recipeNameLabel: "레시피명",
           recipeNamePlaceholder: "예: 내 원두 산미용",
-          prepNoteLabel: "사전 준비 사항",
-          prepNotePlaceholder: "예: 서버에 얼음 100g을 먼저 넣고 시작하세요",
+          prepNoteLabel: "원두량 및 사전준비사항",
+          prepNotePlaceholder: "예: 원두 20g / 서버에 얼음 100g을 먼저 넣고 시작하세요",
           saveCurrentSettings: "현재 설정 저장",
           importRecipe: "TXT 레시피 가져오기",
           importRecipeSuccess: "{name} 레시피를 저장하고 현재 설정에 적용했습니다.",
@@ -1296,8 +1436,8 @@
           recipeCategoryLabel: "Recipe Category",
           recipeNameLabel: "Recipe Name",
           recipeNamePlaceholder: "Example: Bright beans recipe",
-          prepNoteLabel: "Prep Note",
-          prepNotePlaceholder: "Example: Add 100g ice to the server first",
+          prepNoteLabel: "Coffee Dose and Prep Notes",
+          prepNotePlaceholder: "Example: Coffee 20g / Add 100g ice to the server first",
           saveCurrentSettings: "Save Current Settings",
           importRecipe: "Import TXT Recipe",
           importRecipeSuccess: "Saved {name} and applied it to the current settings.",
@@ -1406,8 +1546,8 @@
           recipeCategoryLabel: "配方分类",
           recipeNameLabel: "配方名称",
           recipeNamePlaceholder: "例如：明亮酸质豆配方",
-          prepNoteLabel: "事前准备",
-          prepNotePlaceholder: "例如：先在分享壶中加入100g冰块",
+          prepNoteLabel: "咖啡粉量及事前准备",
+          prepNotePlaceholder: "例如：咖啡粉20g / 先在分享壶中加入100g冰块",
           saveCurrentSettings: "保存当前设置",
           importRecipe: "导入TXT配方",
           importRecipeSuccess: "已保存 {name}，并应用到当前设置。",
@@ -1516,8 +1656,8 @@
           recipeCategoryLabel: "レシピ分類",
           recipeNameLabel: "レシピ名",
           recipeNamePlaceholder: "例：酸味を出す豆用",
-          prepNoteLabel: "事前準備",
-          prepNotePlaceholder: "例：サーバーに氷100gを先に入れる",
+          prepNoteLabel: "コーヒー粉量と事前準備",
+          prepNotePlaceholder: "例：コーヒー粉20g / サーバーに氷100gを先に入れる",
           saveCurrentSettings: "現在の設定を保存",
           importRecipe: "TXTレシピを読み込む",
           importRecipeSuccess: "{name}を保存し、現在の設定に適用しました。",
@@ -2245,6 +2385,7 @@
           amounts: [],
           stages: []
         };
+        var amountLinesStarted = false;
 
         source.split("\n").forEach(function (rawLine) {
           var line = rawLine.trim();
@@ -2264,7 +2405,7 @@
               return;
             }
             if (key === "prep") {
-              imported.prepNote = field.value.trim();
+              appendRecipeImportPrepNote(imported, field.value);
               return;
             }
             if (key === "end") {
@@ -2276,14 +2417,23 @@
               return;
             }
             if (key === "amounts") {
-              imported.amounts = parseRecipeImportAmounts(field.value);
+              var amountField = parseRecipeImportAmountLine(field.value);
+              imported.amounts = imported.amounts.concat(amountField.amounts.length ? amountField.amounts : parseRecipeImportAmounts(field.value));
+              appendRecipeImportPrepNote(imported, amountField.note);
+              amountLinesStarted = true;
               return;
             }
             if (key === "stage") {
               var stageFromValue = parseRecipeImportStageLine(field.value);
               if (stageFromValue) {
                 imported.stages.push(stageFromValue);
+                amountLinesStarted = true;
               }
+              return;
+            }
+
+            if (amountLinesStarted) {
+              appendRecipeImportPrepNote(imported, line);
               return;
             }
 
@@ -2295,16 +2445,20 @@
             var stageFromUnknownValue = parseRecipeImportStageLine(field.value);
             if (stageFromUnknownValue) {
               imported.stages.push(stageFromUnknownValue);
+              amountLinesStarted = true;
               return;
             }
-            var amountsFromUnknownValue = parseRecipeImportStandaloneAmounts(field.value);
-            if (amountsFromUnknownValue.length) {
-              imported.amounts = imported.amounts.concat(amountsFromUnknownValue);
+            var amountLineFromUnknownValue = parseRecipeImportAmountLine(field.value);
+            if (amountLineFromUnknownValue.amounts.length) {
+              imported.amounts = imported.amounts.concat(amountLineFromUnknownValue.amounts);
+              appendRecipeImportPrepNote(imported, amountLineFromUnknownValue.note);
+              amountLinesStarted = true;
               return;
             }
             var gramAmountsFromUnknownValue = parseRecipeImportGramAmounts(field.value);
             if (gramAmountsFromUnknownValue.length) {
               imported.amounts = imported.amounts.concat(gramAmountsFromUnknownValue);
+              amountLinesStarted = true;
               return;
             }
           }
@@ -2318,22 +2472,39 @@
           var stage = parseRecipeImportStageLine(line);
           if (stage) {
             imported.stages.push(stage);
+            amountLinesStarted = true;
             return;
           }
 
-          var standaloneAmounts = parseRecipeImportStandaloneAmounts(line);
-          if (standaloneAmounts.length) {
-            imported.amounts = imported.amounts.concat(standaloneAmounts);
+          var amountLine = parseRecipeImportAmountLine(line);
+          if (amountLine.amounts.length) {
+            imported.amounts = imported.amounts.concat(amountLine.amounts);
+            appendRecipeImportPrepNote(imported, amountLine.note);
+            amountLinesStarted = true;
+            return;
+          }
+
+          if (amountLinesStarted) {
+            appendRecipeImportPrepNote(imported, line);
             return;
           }
 
           var gramAmounts = parseRecipeImportGramAmounts(line);
           if (gramAmounts.length) {
             imported.amounts = imported.amounts.concat(gramAmounts);
+            amountLinesStarted = true;
           }
         });
 
         return normalizeImportedRecipe(imported, fileName, blockIndex);
+      }
+
+      function appendRecipeImportPrepNote(imported, note) {
+        var cleanNote = String(note || "").trim();
+        if (!cleanNote) {
+          return;
+        }
+        imported.prepNote = imported.prepNote ? imported.prepNote + " / " + cleanNote : cleanNote;
       }
 
       function normalizeImportedRecipe(imported, fileName, blockIndex) {
@@ -2406,7 +2577,7 @@
         return {
           categoryId: imported.categoryId || (fallbackCategory === "ice" ? "ice" : "hot"),
           name: name || t("importedRecipeFallbackName"),
-          prepNote: imported.prepNote.trim().slice(0, 80),
+          prepNote: imported.prepNote.trim().slice(0, 240),
           extractionEndSeconds: extractionEndSeconds,
           stages: stages
         };
@@ -2429,6 +2600,11 @@
 
       function splitRecipeImportLooseFieldLine(line) {
         var prefixes = [
+          "원두량 및 사전준비사항",
+          "원두량 및 사전 준비 사항",
+          "Coffee Dose and Prep Notes",
+          "咖啡粉量及事前准备",
+          "コーヒー粉量と事前準備",
           "사전 준비 사항",
           "Recipe Category",
           "Recipe Name",
@@ -2513,7 +2689,7 @@
         if (["분류", "레시피분류", "카테고리", "category", "recipecategory", "type", "配方分类", "分类", "分類", "レシピ分類", "カテゴリ"].indexOf(normalized) >= 0) {
           return "category";
         }
-        if (["사전준비사항", "사전준비", "준비", "준비사항", "prep", "prepnote", "preparation", "事前准备", "准备", "準備", "事前準備"].indexOf(normalized) >= 0) {
+        if (["원두량및사전준비사항", "사전준비사항", "사전준비", "준비", "준비사항", "coffeedoseandprepnotes", "prep", "prepnote", "preparation", "咖啡粉量及事前准备", "事前准备", "准备", "準備", "コーヒー粉量と事前準備", "事前準備"].indexOf(normalized) >= 0) {
           return "prep";
         }
         if (["종료시간", "종료", "전체추출종료시간", "end", "endtime", "totaltime", "brewtime", "结束时间", "结束", "总萃取结束时间", "終了時間", "終了", "抽出終了時間"].indexOf(normalized) >= 0) {
@@ -2573,6 +2749,28 @@
         return matches.map(function (match) {
           return Number(match);
         });
+      }
+
+      function parseRecipeImportAmountLine(value) {
+        var text = normalizeRecipeImportText(value).trim();
+        if (!text || /\d+\s*:\s*\d{1,2}/.test(text)) {
+          return { amounts: [], note: "" };
+        }
+
+        var rest = text;
+        var amounts = [];
+        var amountMatcher = /^(\d+(?:\.\d+)?)\s*(?:g|gram|grams|그램|克|グラム)?(?:\s*[\/,，、|]\s*|\s+|$)/i;
+        var match = rest.match(amountMatcher);
+        while (match) {
+          amounts.push(Number(match[1]));
+          rest = rest.slice(match[0].length).trim();
+          match = rest.match(amountMatcher);
+        }
+
+        return {
+          amounts: amounts,
+          note: rest
+        };
       }
 
       function parseRecipeImportStandaloneTimes(value) {
@@ -2811,7 +3009,7 @@
             extractionEndSeconds: sanitizeNonNegativeNumber(value.extractionEndSeconds, DEFAULT_SETTINGS.extractionEndSeconds),
             stages: stages
           }, "나만의"),
-          prepNote: typeof value.prepNote === "string" ? value.prepNote.slice(0, 80) : "",
+          prepNote: typeof value.prepNote === "string" ? value.prepNote.slice(0, 240) : "",
           extractionEndSeconds: sanitizeNonNegativeNumber(value.extractionEndSeconds, DEFAULT_SETTINGS.extractionEndSeconds),
           stages: stages,
           isCustom: true,
