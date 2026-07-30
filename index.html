@@ -982,12 +982,12 @@
           <div class="time-row">
             <div class="field">
               <label for="endMinutes" data-i18n="minuteLabel">분</label>
-              <input id="endMinutes" type="number" inputmode="numeric" min="0" step="1" autocomplete="off">
+              <select id="endMinutes"></select>
             </div>
             <span class="colon" aria-hidden="true">:</span>
             <div class="field">
               <label for="endSeconds" data-i18n="secondLabel">초</label>
-              <input id="endSeconds" type="number" inputmode="numeric" min="0" max="59" step="1" autocomplete="off">
+              <select id="endSeconds"></select>
             </div>
           </div>
         </div>
@@ -1139,14 +1139,15 @@
       var MAX_STAGES = 10;
       var MIN_STAGES = 1;
       var FINISH_WARNING_SECONDS = 5;
+      var TIME_SELECTOR_MAX_MINUTES = 59;
       var DEFAULT_SETTINGS = {
         version: SETTINGS_VERSION,
-        extractionEndSeconds: 180,
+        extractionEndSeconds: 0,
         stages: [
-          { startSeconds: 0, amountGrams: 60 },
-          { startSeconds: 45, amountGrams: 80 },
-          { startSeconds: 90, amountGrams: 80 },
-          { startSeconds: 135, amountGrams: 80 }
+          { startSeconds: 0, amountGrams: 0 },
+          { startSeconds: 0, amountGrams: 0 },
+          { startSeconds: 0, amountGrams: 0 },
+          { startSeconds: 0, amountGrams: 0 }
         ],
         soundEnabled: true,
         vibrationEnabled: true,
@@ -1705,6 +1706,7 @@
         appState.debugEnabled = shouldEnableDebug();
         elements.languageSelect.value = appState.settings.language || "ko";
         elements.debugPanel.classList.toggle("hidden", !appState.debugEnabled);
+        populateStaticTimeSelectors();
         applyTranslations();
         renderPresetSelectors();
         renderSetupScreen();
@@ -1734,8 +1736,8 @@
           });
         });
 
-        elements.endMinutes.addEventListener("input", handleSetupInputChange);
-        elements.endSeconds.addEventListener("input", handleSetupInputChange);
+        elements.endMinutes.addEventListener("change", handleSetupInputChange);
+        elements.endSeconds.addEventListener("change", handleSetupInputChange);
         elements.presetCategory.addEventListener("change", function () {
           elements.customPresetCategory.value = elements.presetCategory.value;
           renderPresetRecipeOptions();
@@ -2829,7 +2831,7 @@
             return Boolean(
               stage &&
               isStoredNonNegativeNumber(stage.startSeconds) &&
-              isStoredPositiveNumber(stage.amountGrams)
+              isStoredNonNegativeNumber(stage.amountGrams)
             );
           })
         );
@@ -2873,7 +2875,7 @@
         value.stages.slice(0, MAX_STAGES).forEach(function (stage, index) {
           sanitized.stages.push({
             startSeconds: sanitizeNonNegativeNumber(stage.startSeconds, index * 30),
-            amountGrams: sanitizePositiveNumber(stage.amountGrams, DEFAULT_SETTINGS.stages[Math.min(index, DEFAULT_SETTINGS.stages.length - 1)].amountGrams)
+            amountGrams: sanitizeNonNegativeNumber(stage.amountGrams, DEFAULT_SETTINGS.stages[Math.min(index, DEFAULT_SETTINGS.stages.length - 1)].amountGrams)
           });
         });
 
@@ -2891,10 +2893,34 @@
         }
       }
 
+      function populateStaticTimeSelectors() {
+        elements.endMinutes.innerHTML = createTimeSelectOptions(TIME_SELECTOR_MAX_MINUTES, 0);
+        elements.endSeconds.innerHTML = createTimeSelectOptions(59, 0);
+      }
+
+      function createTimeSelectOptions(maxValue, selectedValue) {
+        var safeMax = Math.max(0, Math.floor(Number(maxValue) || 0));
+        var safeSelected = Math.max(0, Math.floor(Number(selectedValue) || 0));
+        var options = [];
+        var optionCount = Math.max(safeMax, safeSelected);
+        for (var value = 0; value <= optionCount; value += 1) {
+          options.push('<option value="' + value + '"' + (value === safeSelected ? " selected" : "") + ">" + pad2(value) + "</option>");
+        }
+        return options.join("");
+      }
+
+      function setTimeSelectValue(select, value, maxValue) {
+        var safeValue = Math.max(0, Math.floor(Number(value) || 0));
+        if (!select.querySelector('option[value="' + safeValue + '"]')) {
+          select.innerHTML = createTimeSelectOptions(Math.max(maxValue, safeValue), safeValue);
+        }
+        select.value = String(safeValue);
+      }
+
       function renderSetupScreen() {
         var endParts = secondsToParts(appState.settings.extractionEndSeconds);
-        elements.endMinutes.value = String(endParts.minutes);
-        elements.endSeconds.value = pad2(endParts.seconds);
+        setTimeSelectValue(elements.endMinutes, endParts.minutes, TIME_SELECTOR_MAX_MINUTES);
+        setTimeSelectValue(elements.endSeconds, endParts.seconds, 59);
         elements.soundEnabled.checked = appState.settings.soundEnabled;
         elements.vibrationEnabled.checked = appState.settings.vibrationEnabled;
         elements.customPresetNote.value = appState.settings.prepNote || "";
@@ -2938,11 +2964,11 @@
             '  <div class="stage-time-grid">',
             '    <div class="field">',
             '      <label for="stage-' + index + '-minutes">' + t("startMinute") + '</label>',
-            '      <input id="stage-' + index + '-minutes" class="stage-input" data-field="minutes" data-stage-index="' + index + '" type="number" inputmode="numeric" min="0" step="1" autocomplete="off" value="' + startParts.minutes + '">',
+            '      <select id="stage-' + index + '-minutes" class="stage-input" data-field="minutes" data-stage-index="' + index + '">' + createTimeSelectOptions(TIME_SELECTOR_MAX_MINUTES, startParts.minutes) + '</select>',
             '    </div>',
             '    <div class="field">',
             '      <label for="stage-' + index + '-seconds">' + t("startSecond") + '</label>',
-            '      <input id="stage-' + index + '-seconds" class="stage-input" data-field="seconds" data-stage-index="' + index + '" type="number" inputmode="numeric" min="0" max="59" step="1" autocomplete="off" value="' + pad2(startParts.seconds) + '">',
+            '      <select id="stage-' + index + '-seconds" class="stage-input" data-field="seconds" data-stage-index="' + index + '">' + createTimeSelectOptions(59, startParts.seconds) + '</select>',
             '    </div>',
             '  </div>',
             '  <div class="stage-number-grid">',
@@ -3028,7 +3054,7 @@
 
         appState.settings.stages.push({
           startSeconds: newStart,
-          amountGrams: lastStage.amountGrams || 30
+          amountGrams: isFiniteNumber(lastStage.amountGrams) ? lastStage.amountGrams : 0
         });
 
         renderSetupScreen();
@@ -3064,6 +3090,12 @@
         }
       });
 
+      elements.stageList.addEventListener("change", function (event) {
+        if (event.target.classList.contains("stage-input")) {
+          handleSetupInputChange(event);
+        }
+      });
+
       elements.stageList.addEventListener("click", function (event) {
         var button = event.target.closest(".delete-stage-button");
         if (!button) {
@@ -3077,7 +3109,7 @@
         elements.globalError.textContent = "";
         elements.globalError.classList.remove("visible");
         [elements.endMinutes, elements.endSeconds].forEach(clearInputError);
-        var inputs = elements.stageList.querySelectorAll("input");
+        var inputs = elements.stageList.querySelectorAll("input, select");
         Array.prototype.forEach.call(inputs, clearInputError);
         var errors = elements.stageList.querySelectorAll(".stage-error");
         Array.prototype.forEach.call(errors, function (errorElement) {
