@@ -710,6 +710,16 @@
       transition: width 120ms linear;
     }
 
+    .progress-time-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-variant-numeric: tabular-nums;
+      font-size: 12px;
+      font-weight: 800;
+      opacity: 0.78;
+    }
+
     .timer-controls {
       display: grid;
       gap: 10px;
@@ -1056,9 +1066,8 @@
             <div id="countdownText" class="timer-countdown" aria-live="polite"></div>
           </div>
 
-          <div class="time-display" aria-label="경과 시간" data-i18n-aria-label="elapsedTimeAria">
+          <div class="time-display" aria-label="다음 푸어링까지 남은 시간" data-i18n-aria-label="nextPourCountdownAria">
             <span id="elapsedTimeText" class="elapsed-time">00:00</span>
-            <span id="totalTimeText" class="end-time">/ 02:10</span>
           </div>
 
           <div id="timerInfo" class="timer-info">
@@ -1075,13 +1084,17 @@
               <span id="cumulativeAmountInfo" class="info-value">0g</span>
             </div>
             <div class="info-item">
-              <span class="info-label" data-i18n="nextPouringLabel">다음 푸어링까지</span>
-              <span id="nextStageInfo" class="info-value">--:--</span>
+              <span class="info-label" data-i18n="elapsedBrewTimeLabel">누적 추출시간</span>
+              <span id="nextStageInfo" class="info-value">00:00</span>
             </div>
           </div>
 
           <div class="progress-track" aria-label="전체 진행률" data-i18n-aria-label="progressAria">
             <div id="progressBar" class="progress-bar"></div>
+          </div>
+          <div class="progress-time-labels" aria-hidden="true">
+            <span>00:00</span>
+            <span id="progressEndTimeText">00:00</span>
           </div>
         </main>
 
@@ -1365,10 +1378,11 @@
           finishedState: "완료",
           prepare: "추출을 준비해주세요",
           elapsedTimeAria: "경과 시간",
+          nextPourCountdownAria: "다음 푸어링까지 남은 시간",
           currentStageLabel: "현재 차수",
           currentPouringLabel: "이번 푸어링",
           cumulativeLabel: "누적",
-          nextPouringLabel: "다음 푸어링까지",
+          elapsedBrewTimeLabel: "누적 추출시간",
           progressAria: "전체 진행률",
           pause: "일시정지",
           continue: "계속",
@@ -1475,10 +1489,11 @@
           finishedState: "Finished",
           prepare: "Get ready to brew",
           elapsedTimeAria: "Elapsed time",
+          nextPourCountdownAria: "Time until next pour",
           currentStageLabel: "Current Stage",
           currentPouringLabel: "This Pour",
           cumulativeLabel: "Total",
-          nextPouringLabel: "Next Pour In",
+          elapsedBrewTimeLabel: "Elapsed Brew Time",
           progressAria: "Overall progress",
           pause: "Pause",
           continue: "Resume",
@@ -1585,10 +1600,11 @@
           finishedState: "完成",
           prepare: "请准备开始萃取",
           elapsedTimeAria: "已用时间",
+          nextPourCountdownAria: "距下次注水的剩余时间",
           currentStageLabel: "当前段数",
           currentPouringLabel: "本次注水",
           cumulativeLabel: "累计",
-          nextPouringLabel: "下次注水还有",
+          elapsedBrewTimeLabel: "累计萃取时间",
           progressAria: "总进度",
           pause: "暂停",
           continue: "继续",
@@ -1695,10 +1711,11 @@
           finishedState: "完了",
           prepare: "抽出の準備をしてください",
           elapsedTimeAria: "経過時間",
+          nextPourCountdownAria: "次の注湯までの残り時間",
           currentStageLabel: "現在のステージ",
           currentPouringLabel: "今回の注湯",
           cumulativeLabel: "累計",
-          nextPouringLabel: "次の注湯まで",
+          elapsedBrewTimeLabel: "累計抽出時間",
           progressAria: "全体の進行状況",
           pause: "一時停止",
           continue: "再開",
@@ -1823,12 +1840,12 @@
         timerPrepNote: document.getElementById("timerPrepNote"),
         countdownText: document.getElementById("countdownText"),
         elapsedTimeText: document.getElementById("elapsedTimeText"),
-        totalTimeText: document.getElementById("totalTimeText"),
         currentStageInfo: document.getElementById("currentStageInfo"),
         currentAmountInfo: document.getElementById("currentAmountInfo"),
         cumulativeAmountInfo: document.getElementById("cumulativeAmountInfo"),
         nextStageInfo: document.getElementById("nextStageInfo"),
         progressBar: document.getElementById("progressBar"),
+        progressEndTimeText: document.getElementById("progressEndTimeText"),
         pauseButton: document.getElementById("pauseButton"),
         resetTimerButton: document.getElementById("resetTimerButton"),
         restartSameRecipeButton: document.getElementById("restartSameRecipeButton"),
@@ -3488,7 +3505,7 @@
         elements.timerScreen.classList.remove("is-finished");
         elements.pauseButton.textContent = t("pause");
         elements.timerStateBadge.textContent = t("running");
-        elements.totalTimeText.textContent = "/ " + secondsToTimeString(appState.activeRecipe.extractionEndSeconds);
+        elements.progressEndTimeText.textContent = secondsToTimeString(appState.activeRecipe.extractionEndSeconds);
         if (appState.activeRecipe.prepNote) {
           elements.timerPrepNote.textContent = appState.activeRecipe.prepNote;
           elements.timerPrepNote.classList.remove("hidden");
@@ -3525,8 +3542,9 @@
         var activeStage = getCurrentStage(elapsedSeconds, recipe.stages);
         var nextStage = getNextStage(elapsedSeconds, recipe.stages);
         var displayStage = activeStage || nextStage || recipe.stages[recipe.stages.length - 1];
+        var remainingSeconds = getPrimaryRemainingSeconds(recipe, nextStage, elapsedSeconds);
 
-        elements.elapsedTimeText.textContent = secondsToTimeString(elapsedSeconds);
+        elements.elapsedTimeText.textContent = secondsToTimeString(remainingSeconds);
         elements.progressBar.style.width = progress.toFixed(2) + "%";
 
         if (isFinishWarning) {
@@ -3548,6 +3566,11 @@
         appState.lastRenderedSecond = roundedElapsed;
       }
 
+      function getPrimaryRemainingSeconds(recipe, nextStage, elapsedSeconds) {
+        var targetSeconds = nextStage ? nextStage.startSeconds : recipe.extractionEndSeconds;
+        return Math.max(0, targetSeconds - elapsedSeconds);
+      }
+
       function renderReadyState(nextStage, elapsedSeconds) {
         var remaining = Math.max(0, nextStage.startSeconds - elapsedSeconds);
         elements.timerMessage.textContent = t("prepare");
@@ -3561,12 +3584,6 @@
         elements.timerMessage.classList.remove("long-message");
         elements.countdownText.textContent = "";
         applyTimerTheme(STAGE_THEMES[activeStage.index % STAGE_THEMES.length]);
-
-        if (nextStage) {
-          elements.nextStageInfo.textContent = secondsToTimeString(Math.max(0, nextStage.startSeconds - elapsedSeconds));
-        } else {
-          elements.nextStageInfo.textContent = t("lastStage");
-        }
       }
 
       function renderFinishWarning(remaining) {
@@ -3581,14 +3598,7 @@
         elements.currentStageInfo.textContent = currentLabel;
         elements.currentAmountInfo.textContent = formatGrams(displayStage ? displayStage.amount : 0, 0);
         elements.cumulativeAmountInfo.textContent = formatGrams(activeStage ? activeStage.cumulativeAmount : 0, 0);
-
-        if (!activeStage && nextStage) {
-          elements.nextStageInfo.textContent = secondsToTimeString(Math.max(0, nextStage.startSeconds - elapsedSeconds));
-        } else if (nextStage) {
-          elements.nextStageInfo.textContent = secondsToTimeString(Math.max(0, nextStage.startSeconds - elapsedSeconds));
-        } else {
-          elements.nextStageInfo.textContent = t("lastStage");
-        }
+        elements.nextStageInfo.textContent = secondsToTimeString(elapsedSeconds);
       }
 
       function triggerStageEvents(elapsedSeconds) {
@@ -3618,7 +3628,7 @@
         cancelAnimationFrameIfNeeded();
         appState.mode = "finished";
         appState.elapsedSeconds = appState.activeRecipe.extractionEndSeconds;
-        elements.elapsedTimeText.textContent = secondsToTimeString(appState.elapsedSeconds);
+        elements.elapsedTimeText.textContent = "00:00";
         elements.progressBar.style.width = "100%";
         elements.timerMessage.textContent = t("finishedMessage");
         elements.timerMessage.classList.add("long-message");
@@ -3626,7 +3636,7 @@
         elements.timerStateBadge.textContent = t("finishedState");
         elements.timerScreen.classList.add("is-finished");
         elements.currentStageInfo.textContent = t("done");
-        elements.nextStageInfo.textContent = t("done");
+        elements.nextStageInfo.textContent = secondsToTimeString(appState.elapsedSeconds);
         applyTimerTheme(FINISHED_THEME);
         if (!appState.triggeredEvents.finished) {
           appState.triggeredEvents.finished = true;
