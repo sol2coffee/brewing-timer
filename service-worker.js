@@ -1,4 +1,4 @@
-const CACHE_NAME = "brewing-timer-pwa-v2";
+const CACHE_NAME = "brewing-timer-pwa-v3";
 const APP_SHELL = [
   "./",
   "./index.html",

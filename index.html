@@ -1193,7 +1193,8 @@
       var DEBUG_MODE = false;
       var MAX_STAGES = 10;
       var MIN_STAGES = 1;
-      var FINISH_WARNING_SECONDS = 5;
+      var MIN_EXTRACTION_END_SECONDS = 5;
+      var FINISH_WARNING_SECONDS = 10;
       var TIME_SELECTOR_MAX_MINUTES = 59;
       var MAX_PREPARATION_SECONDS = 60;
       var DEFAULT_SETTINGS = {
@@ -2683,7 +2684,7 @@
         }
 
         var extractionEndSeconds = Number.isFinite(imported.extractionEndSeconds) ? Math.floor(imported.extractionEndSeconds) : inferRecipeImportEndSeconds(stages);
-        if (!Number.isFinite(extractionEndSeconds) || extractionEndSeconds < FINISH_WARNING_SECONDS) {
+        if (!Number.isFinite(extractionEndSeconds) || extractionEndSeconds < MIN_EXTRACTION_END_SECONDS) {
           throw new Error(t("importRecipeInvalidTime"));
         }
         if (extractionEndSeconds <= stages[stages.length - 1].startSeconds) {
@@ -3020,7 +3021,7 @@
       }
 
       function inferRecipeImportEndSeconds(stages) {
-        return Math.max(FINISH_WARNING_SECONDS + 1, stages[stages.length - 1].startSeconds + 40);
+        return Math.max(MIN_EXTRACTION_END_SECONDS + 1, stages[stages.length - 1].startSeconds + 40);
       }
 
       function getRecipeImportFileBaseName(fileName) {
@@ -3534,7 +3535,7 @@
           return createValidationError(t("endTimeInvalid"), elements.endMinutes);
         }
 
-        if (!isFiniteNumber(appState.settings.extractionEndSeconds) || appState.settings.extractionEndSeconds < FINISH_WARNING_SECONDS) {
+        if (!isFiniteNumber(appState.settings.extractionEndSeconds) || appState.settings.extractionEndSeconds < MIN_EXTRACTION_END_SECONDS) {
           setInputError(elements.endMinutes);
           setInputError(elements.endSeconds);
           return createValidationError(t("endTimeMin"), elements.endMinutes);
