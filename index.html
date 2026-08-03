@@ -417,7 +417,7 @@
 
     .settings-row {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: 10px;
       margin-top: 14px;
     }
@@ -437,10 +437,36 @@
       font-weight: 800;
     }
 
-    .toggle input {
+    .toggle input[type="checkbox"] {
       width: 22px;
       min-height: 22px;
       accent-color: var(--accent);
+    }
+
+    .sound-toggle {
+      display: grid;
+      grid-template-columns: auto minmax(96px, 1fr) auto auto;
+      align-items: center;
+    }
+
+    .sound-toggle .toggle-text {
+      white-space: nowrap;
+    }
+
+    .volume-slider {
+      width: 100%;
+      min-width: 0;
+      min-height: 22px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .volume-value {
+      min-width: 36px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+      text-align: right;
     }
 
     .debug-panel {
@@ -1031,14 +1057,12 @@
         <div id="stageList" class="stage-list"></div>
 
         <div class="settings-row" aria-label="알림 설정" data-i18n-aria-label="notificationSettingsAria">
-          <label class="toggle" for="soundEnabled">
-            <span data-i18n="soundLabel">알림음</span>
-            <input id="soundEnabled" type="checkbox">
-          </label>
-          <label class="toggle" for="vibrationEnabled">
-            <span data-i18n="vibrationLabel">진동</span>
-            <input id="vibrationEnabled" type="checkbox">
-          </label>
+          <div class="toggle sound-toggle">
+            <label id="soundEnabledLabel" class="toggle-text" for="soundEnabled" data-i18n="soundLabel">알림음</label>
+            <input id="soundVolume" class="volume-slider" type="range" min="0" max="100" step="5" value="30" aria-label="알림음 볼륨" data-i18n-aria-label="soundVolumeAria">
+            <span id="soundVolumeValue" class="volume-value" aria-live="polite">30%</span>
+            <input id="soundEnabled" type="checkbox" aria-labelledby="soundEnabledLabel">
+          </div>
         </div>
 
         <div id="debugPanel" class="debug-panel hidden">
@@ -1207,7 +1231,7 @@
           { startSeconds: 0, amountGrams: 0 }
         ],
         soundEnabled: true,
-        vibrationEnabled: true,
+        soundVolume: 30,
         language: "ko",
         presetName: "사용자 설정",
         prepNote: "",
@@ -1413,7 +1437,7 @@
           pouringStagesTitle: "푸어링 차수",
           notificationSettingsAria: "알림 설정",
           soundLabel: "알림음",
-          vibrationLabel: "진동",
+          soundVolumeAria: "알림음 볼륨",
           debugSpeedLabel: "테스트 배속",
           speed1: "1배",
           speed5: "5배",
@@ -1530,7 +1554,7 @@
           pouringStagesTitle: "Pouring Stages",
           notificationSettingsAria: "Notification settings",
           soundLabel: "Sound",
-          vibrationLabel: "Vibration",
+          soundVolumeAria: "Sound volume",
           debugSpeedLabel: "Test Speed",
           speed1: "1x",
           speed5: "5x",
@@ -1647,7 +1671,7 @@
           pouringStagesTitle: "注水段数",
           notificationSettingsAria: "提醒设置",
           soundLabel: "提示音",
-          vibrationLabel: "振动",
+          soundVolumeAria: "提示音音量",
           debugSpeedLabel: "测试倍速",
           speed1: "1倍",
           speed5: "5倍",
@@ -1764,7 +1788,7 @@
           pouringStagesTitle: "注湯ステージ",
           notificationSettingsAria: "通知設定",
           soundLabel: "通知音",
-          vibrationLabel: "振動",
+          soundVolumeAria: "通知音の音量",
           debugSpeedLabel: "テスト速度",
           speed1: "1倍",
           speed5: "5倍",
@@ -1901,7 +1925,8 @@
         recipeNote: document.getElementById("recipeNote"),
         stageList: document.getElementById("stageList"),
         soundEnabled: document.getElementById("soundEnabled"),
-        vibrationEnabled: document.getElementById("vibrationEnabled"),
+        soundVolume: document.getElementById("soundVolume"),
+        soundVolumeValue: document.getElementById("soundVolumeValue"),
         addStageButton: document.getElementById("addStageButton"),
         startButton: document.getElementById("startButton"),
         globalError: document.getElementById("globalError"),
@@ -2000,7 +2025,8 @@
         elements.importRecipeButton.addEventListener("click", requestRecipeImportFile);
         elements.recipeImportFile.addEventListener("change", handleRecipeImportFileChange);
         elements.soundEnabled.addEventListener("change", handleSetupInputChange);
-        elements.vibrationEnabled.addEventListener("change", handleSetupInputChange);
+        elements.soundVolume.addEventListener("input", handleSoundVolumeInput);
+        elements.soundVolume.addEventListener("change", handleSoundVolumeCommit);
         elements.addStageButton.addEventListener("click", addStage);
         elements.startButton.addEventListener("click", startTimer);
         elements.speedSelect.addEventListener("change", function () {
@@ -2195,7 +2221,7 @@
         }
 
         var soundEnabled = elements.soundEnabled.checked;
-        var vibrationEnabled = elements.vibrationEnabled.checked;
+        var soundVolume = sanitizeSoundVolume(elements.soundVolume.value, DEFAULT_SETTINGS.soundVolume);
         appState.settings = {
           version: SETTINGS_VERSION,
           extractionEndSeconds: preset.extractionEndSeconds,
@@ -2206,7 +2232,7 @@
             };
           }),
           soundEnabled: soundEnabled,
-          vibrationEnabled: vibrationEnabled,
+          soundVolume: soundVolume,
           language: appState.settings.language,
           presetName: preset.name,
           prepNote: preset.prepNote || "",
@@ -2404,7 +2430,7 @@
             };
           }),
           soundEnabled: elements.soundEnabled.checked,
-          vibrationEnabled: elements.vibrationEnabled.checked,
+          soundVolume: sanitizeSoundVolume(elements.soundVolume.value, DEFAULT_SETTINGS.soundVolume),
           language: appState.settings.language,
           presetName: customPreset.name,
           prepNote: customPreset.prepNote,
@@ -3074,7 +3100,7 @@
             };
           }),
           soundEnabled: Boolean(settings.soundEnabled),
-          vibrationEnabled: Boolean(settings.vibrationEnabled),
+          soundVolume: sanitizeSoundVolume(settings.soundVolume, DEFAULT_SETTINGS.soundVolume),
           language: normalizeLanguage(settings.language),
           presetName: typeof settings.presetName === "string" ? settings.presetName : t("userSettings"),
           prepNote: typeof settings.prepNote === "string" ? settings.prepNote : "",
@@ -3201,7 +3227,7 @@
             };
           }),
           soundEnabled: value.soundEnabled,
-          vibrationEnabled: value.vibrationEnabled,
+          soundVolume: value.soundVolume,
           language: normalizeLanguage(value.language),
           presetName: t("userSettings"),
           prepNote: "",
@@ -3216,7 +3242,7 @@
           extractionEndSeconds: value.extractionEndSeconds,
           stages: Array.isArray(value.stages) ? value.stages : [],
           soundEnabled: value.soundEnabled,
-          vibrationEnabled: value.vibrationEnabled,
+          soundVolume: value.soundVolume,
           language: value.language,
           presetName: value.presetName,
           prepNote: value.prepNote,
@@ -3231,7 +3257,7 @@
           extractionEndSeconds: sanitizeNonNegativeNumber(value.extractionEndSeconds, DEFAULT_SETTINGS.extractionEndSeconds),
           stages: [],
           soundEnabled: Boolean(value.soundEnabled),
-          vibrationEnabled: Boolean(value.vibrationEnabled),
+          soundVolume: sanitizeSoundVolume(value.soundVolume, DEFAULT_SETTINGS.soundVolume),
           language: normalizeLanguage(value.language),
           presetName: typeof value.presetName === "string" ? value.presetName : t("userSettings"),
           prepNote: typeof value.prepNote === "string" ? value.prepNote : "",
@@ -3292,7 +3318,8 @@
         elements.prepMessage.value = appState.settings.prepMessage || t("defaultPrepMessage");
         setTimeSelectValue(elements.preparationSeconds, appState.settings.preparationSeconds, MAX_PREPARATION_SECONDS);
         elements.soundEnabled.checked = appState.settings.soundEnabled;
-        elements.vibrationEnabled.checked = appState.settings.vibrationEnabled;
+        elements.soundVolume.value = String(sanitizeSoundVolume(appState.settings.soundVolume, DEFAULT_SETTINGS.soundVolume));
+        updateSoundVolumeDisplay();
         elements.customPresetNote.value = appState.settings.prepNote || "";
         renderStageCards();
         updateRecipeNote();
@@ -3371,6 +3398,23 @@
         }
       }
 
+      function handleSoundVolumeInput() {
+        var volume = sanitizeSoundVolume(elements.soundVolume.value, DEFAULT_SETTINGS.soundVolume);
+        appState.settings.soundVolume = volume;
+        updateSoundVolumeDisplay(volume);
+        saveSettings();
+      }
+
+      function handleSoundVolumeCommit() {
+        handleSoundVolumeInput();
+        playSoundPreview();
+      }
+
+      function updateSoundVolumeDisplay(volume) {
+        var safeVolume = sanitizeSoundVolume(typeof volume === "undefined" ? elements.soundVolume.value : volume, DEFAULT_SETTINGS.soundVolume);
+        elements.soundVolumeValue.textContent = String(safeVolume) + "%";
+      }
+
       function updateComputedAmountsOnly() {
         var cumulativeAmounts = getCumulativeAmounts(appState.settings.stages);
         var cards = elements.stageList.querySelectorAll(".stage-card");
@@ -3392,7 +3436,7 @@
         appState.settings.prepMessage = elements.prepMessage.value.trim().slice(0, 80);
         appState.settings.preparationSeconds = sanitizePreparationSeconds(elements.preparationSeconds.value, DEFAULT_SETTINGS.preparationSeconds);
         appState.settings.soundEnabled = elements.soundEnabled.checked;
-        appState.settings.vibrationEnabled = elements.vibrationEnabled.checked;
+        appState.settings.soundVolume = sanitizeSoundVolume(elements.soundVolume.value, DEFAULT_SETTINGS.soundVolume);
 
         var nextStages = appState.settings.stages.map(function (stage, index) {
           var minuteInput = findStageInput(index, "minutes");
@@ -3650,7 +3694,7 @@
           extractionEndSeconds: Number(settings.extractionEndSeconds),
           stages: stages,
           soundEnabled: Boolean(settings.soundEnabled),
-          vibrationEnabled: Boolean(settings.vibrationEnabled),
+          soundVolume: sanitizeSoundVolume(settings.soundVolume, DEFAULT_SETTINGS.soundVolume),
           presetName: typeof settings.presetName === "string" ? settings.presetName : "사용자 설정",
           prepNote: typeof settings.prepNote === "string" ? settings.prepNote : "",
           prepMessage: typeof settings.prepMessage === "string" && settings.prepMessage.trim() ? settings.prepMessage.trim() : t("defaultPrepMessage"),
@@ -3794,7 +3838,6 @@
           if (elapsedSeconds >= stage.startSeconds && !appState.triggeredEvents[key]) {
             appState.triggeredEvents[key] = true;
             playNotification("stage");
-            vibrate([90]);
           }
         });
       }
@@ -3804,7 +3847,6 @@
         if (elapsedSeconds >= warningAt && !appState.triggeredEvents.finishWarning) {
           appState.triggeredEvents.finishWarning = true;
           playNotification("warning");
-          vibrate([120, 60, 120]);
         }
       }
 
@@ -3829,7 +3871,6 @@
         if (!appState.triggeredEvents.finished) {
           appState.triggeredEvents.finished = true;
           playNotification("finished");
-          vibrate([180, 90, 180, 90, 260]);
         }
         releaseWakeLock();
       }
@@ -3976,7 +4017,8 @@
       }
 
       function playNotification(type) {
-        if (!appState.activeRecipe || !appState.activeRecipe.soundEnabled) {
+        var soundSource = appState.activeRecipe || appState.settings;
+        if (!soundSource || !soundSource.soundEnabled) {
           return;
         }
         activateAudioContext();
@@ -3985,19 +4027,41 @@
         }
         try {
           if (type === "stage") {
-            playToneSequence([660, 880], 0.075, 0.055);
+            playToneSequence([660, 880], 0.075, 0.055, soundSource.soundVolume);
           } else if (type === "warning") {
-            playToneSequence([520, 420, 520], 0.08, 0.045);
+            playToneSequence([520, 420, 520], 0.08, 0.045, soundSource.soundVolume);
           } else if (type === "finished") {
-            playToneSequence([660, 830, 990, 1180], 0.09, 0.045);
+            playToneSequence([660, 830, 990, 1180], 0.09, 0.045, soundSource.soundVolume);
+          } else if (type === "sample") {
+            playToneSequence([740, 980], 0.075, 0.055, soundSource.soundVolume);
           }
         } catch (error) {
           // 오디오가 차단되더라도 타이머 동작은 유지한다.
         }
       }
 
-      function playToneSequence(frequencies, duration, gap) {
+      function playSoundPreview() {
+        if (!appState.settings.soundEnabled) {
+          return;
+        }
+        activateAudioContext();
+        if (!appState.audioContext) {
+          return;
+        }
+        try {
+          playToneSequence([740, 980], 0.075, 0.055, appState.settings.soundVolume);
+        } catch (error) {
+          // 미리듣기 소리가 차단되어도 설정 저장은 유지한다.
+        }
+      }
+
+      function playToneSequence(frequencies, duration, gap, soundVolume) {
         var context = appState.audioContext;
+        var volumeRatio = sanitizeSoundVolume(soundVolume, DEFAULT_SETTINGS.soundVolume) / 100;
+        if (volumeRatio <= 0) {
+          return;
+        }
+        var peakGain = Math.min(0.6, Math.max(0.0001, volumeRatio * 0.6));
         var now = context.currentTime;
         frequencies.forEach(function (frequency, index) {
           var start = now + index * (duration + gap);
@@ -4006,25 +4070,13 @@
           oscillator.type = "sine";
           oscillator.frequency.setValueAtTime(frequency, start);
           gain.gain.setValueAtTime(0.0001, start);
-          gain.gain.exponentialRampToValueAtTime(0.18, start + 0.012);
+          gain.gain.exponentialRampToValueAtTime(peakGain, start + 0.012);
           gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
           oscillator.connect(gain);
           gain.connect(context.destination);
           oscillator.start(start);
           oscillator.stop(start + duration + 0.02);
         });
-      }
-
-      function vibrate(pattern) {
-        var vibrationEnabled = appState.activeRecipe ? appState.activeRecipe.vibrationEnabled : appState.settings.vibrationEnabled;
-        if (!vibrationEnabled || !navigator.vibrate) {
-          return;
-        }
-        try {
-          navigator.vibrate(pattern);
-        } catch (error) {
-          // 미지원 브라우저에서는 조용히 무시한다.
-        }
       }
 
       function requestWakeLock() {
@@ -4136,6 +4188,15 @@
           seconds = fallbackValue;
         }
         return Math.min(MAX_PREPARATION_SECONDS, Math.max(0, Math.floor(seconds)));
+      }
+
+      function sanitizeSoundVolume(value, fallback) {
+        var fallbackValue = Number.isFinite(Number(fallback)) ? Number(fallback) : 30;
+        var volume = Number(value);
+        if (!Number.isFinite(volume)) {
+          volume = fallbackValue;
+        }
+        return Math.min(100, Math.max(0, Math.round(volume)));
       }
 
       function parseWholeNumber(value) {
