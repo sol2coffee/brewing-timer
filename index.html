@@ -207,7 +207,8 @@
     }
 
     .preset-card,
-    .end-time-card {
+    .end-time-card,
+    .start-prep-card {
       display: grid;
       gap: 12px;
       margin-bottom: 15px;
@@ -289,6 +290,13 @@
       display: grid;
       grid-template-columns: 1fr auto 1fr;
       gap: 8px;
+      align-items: end;
+    }
+
+    .start-prep-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 110px;
+      gap: 10px;
       align-items: end;
     }
 
@@ -879,8 +887,13 @@
       }
 
       .stage-card,
-      .end-time-card {
+      .end-time-card,
+      .start-prep-card {
         padding: 12px;
+      }
+
+      .start-prep-grid {
+        grid-template-columns: 1fr;
       }
 
       .settings-row {
@@ -929,7 +942,6 @@
           <h1 id="appTitle">BREWING TIMER</h1>
           <p class="subtitle" data-i18n="subtitle">나만의 푸어링 레시피를 설정하세요</p>
         </div>
-        <button id="resetSettingsButton" class="btn icon danger" type="button" aria-label="설정값 초기화" data-i18n-aria-label="resetSettingsLabel">↺</button>
       </header>
 
       <p class="status-note">
@@ -1001,6 +1013,20 @@
           </div>
         </div>
 
+        <div class="start-prep-card">
+          <h2 class="section-title" data-i18n="startPrepTitle">추출 시작 전 설정</h2>
+          <div class="start-prep-grid">
+            <div class="field">
+              <label for="prepMessage" data-i18n="prepMessageLabel">준비 문구</label>
+              <input id="prepMessage" type="text" maxlength="80" autocomplete="off" data-i18n-placeholder="prepMessagePlaceholder" placeholder="잠시 뒤 추출을 시작합니다">
+            </div>
+            <div class="field">
+              <label for="preparationSeconds" data-i18n="preparationTimeLabel">준비 시간 (초)</label>
+              <select id="preparationSeconds"></select>
+            </div>
+          </div>
+        </div>
+
         <h2 class="section-title" data-i18n="pouringStagesTitle">푸어링 차수</h2>
         <div id="stageList" class="stage-list"></div>
 
@@ -1050,6 +1076,12 @@
               <path d="M21.4 7.1c-.2-.9-.9-1.5-1.7-1.7C18.2 5 12 5 12 5s-6.2 0-7.7.4c-.8.2-1.5.9-1.7 1.7C2.2 8.7 2.2 12 2.2 12s0 3.3.4 4.9c.2.9.9 1.5 1.7 1.7 1.5.4 7.7.4 7.7.4s6.2 0 7.7-.4c.8-.2 1.5-.9 1.7-1.7.4-1.6.4-4.9.4-4.9s0-3.3-.4-4.9zM10.1 14.9V9.1l5.1 2.9-5.1 2.9z"></path>
             </svg>
           </a>
+          <button id="resetSettingsButton" class="social-link refresh" type="button" aria-label="설정값 초기화" data-i18n-aria-label="resetSettingsLabel">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M20 11a8.1 8.1 0 1 0-2.2 5.6"></path>
+              <path d="M20 4v7h-7"></path>
+            </svg>
+          </button>
         </nav>
       </footer>
     </main>
@@ -1153,15 +1185,17 @@
     (function () {
       "use strict";
 
-      var STORAGE_KEY = "brewingTimerSettings.v2";
+      var STORAGE_KEY = "brewingTimerSettings.v3";
+      var PREVIOUS_STORAGE_KEY = "brewingTimerSettings.v2";
       var LEGACY_STORAGE_KEY = "brewingTimerSettings.v1";
       var CUSTOM_PRESETS_STORAGE_KEY = "brewingTimerCustomPresets.v1";
-      var SETTINGS_VERSION = 2;
+      var SETTINGS_VERSION = 3;
       var DEBUG_MODE = false;
       var MAX_STAGES = 10;
       var MIN_STAGES = 1;
       var FINISH_WARNING_SECONDS = 5;
       var TIME_SELECTOR_MAX_MINUTES = 59;
+      var MAX_PREPARATION_SECONDS = 60;
       var DEFAULT_SETTINGS = {
         version: SETTINGS_VERSION,
         extractionEndSeconds: 0,
@@ -1175,7 +1209,9 @@
         vibrationEnabled: true,
         language: "ko",
         presetName: "사용자 설정",
-        prepNote: ""
+        prepNote: "",
+        prepMessage: "",
+        preparationSeconds: 5
       };
 
       var RECIPE_PRESETS = [
@@ -1368,6 +1404,11 @@
           endTimeTitle: "전체 추출 종료시간",
           minuteLabel: "분",
           secondLabel: "초",
+          startPrepTitle: "추출 시작 전 설정",
+          prepMessageLabel: "준비 문구",
+          prepMessagePlaceholder: "잠시 뒤 추출을 시작합니다",
+          preparationTimeLabel: "준비 시간 (초)",
+          defaultPrepMessage: "잠시 뒤 추출을 시작합니다",
           pouringStagesTitle: "푸어링 차수",
           notificationSettingsAria: "알림 설정",
           soundLabel: "알림음",
@@ -1383,6 +1424,7 @@
           addStage: "차수 추가",
           timerScreenAria: "브루잉 타이머 실행 화면",
           running: "실행 중",
+          preparingState: "준비 중",
           paused: "일시정지됨",
           finishedState: "완료",
           prepare: "추출을 준비해주세요",
@@ -1479,6 +1521,11 @@
           endTimeTitle: "Total Brew End Time",
           minuteLabel: "Min",
           secondLabel: "Sec",
+          startPrepTitle: "Before Brewing",
+          prepMessageLabel: "Ready Message",
+          prepMessagePlaceholder: "Brewing will begin shortly",
+          preparationTimeLabel: "Ready Time (Sec)",
+          defaultPrepMessage: "Brewing will begin shortly",
           pouringStagesTitle: "Pouring Stages",
           notificationSettingsAria: "Notification settings",
           soundLabel: "Sound",
@@ -1494,6 +1541,7 @@
           addStage: "Add Stage",
           timerScreenAria: "Brewing timer screen",
           running: "Running",
+          preparingState: "Getting Ready",
           paused: "Paused",
           finishedState: "Finished",
           prepare: "Get ready to brew",
@@ -1590,6 +1638,11 @@
           endTimeTitle: "总萃取结束时间",
           minuteLabel: "分",
           secondLabel: "秒",
+          startPrepTitle: "萃取开始前设置",
+          prepMessageLabel: "准备提示语",
+          prepMessagePlaceholder: "即将开始萃取",
+          preparationTimeLabel: "准备时间（秒）",
+          defaultPrepMessage: "即将开始萃取",
           pouringStagesTitle: "注水段数",
           notificationSettingsAria: "提醒设置",
           soundLabel: "提示音",
@@ -1605,6 +1658,7 @@
           addStage: "添加段数",
           timerScreenAria: "冲煮计时器运行界面",
           running: "运行中",
+          preparingState: "准备中",
           paused: "已暂停",
           finishedState: "完成",
           prepare: "请准备开始萃取",
@@ -1701,6 +1755,11 @@
           endTimeTitle: "抽出終了時間",
           minuteLabel: "分",
           secondLabel: "秒",
+          startPrepTitle: "抽出開始前の設定",
+          prepMessageLabel: "準備メッセージ",
+          prepMessagePlaceholder: "まもなく抽出を開始します",
+          preparationTimeLabel: "準備時間（秒）",
+          defaultPrepMessage: "まもなく抽出を開始します",
           pouringStagesTitle: "注湯ステージ",
           notificationSettingsAria: "通知設定",
           soundLabel: "通知音",
@@ -1716,6 +1775,7 @@
           addStage: "ステージ追加",
           timerScreenAria: "抽出タイマー画面",
           running: "実行中",
+          preparingState: "準備中",
           paused: "一時停止中",
           finishedState: "完了",
           prepare: "抽出の準備をしてください",
@@ -1804,6 +1864,7 @@
         pausedAtPerfMs: 0,
         accumulatedPauseMs: 0,
         elapsedSeconds: 0,
+        isPreparing: false,
         lastRenderedSecond: -1,
         triggeredEvents: {},
         audioContext: null,
@@ -1822,6 +1883,8 @@
         resetSettingsButton: document.getElementById("resetSettingsButton"),
         endMinutes: document.getElementById("endMinutes"),
         endSeconds: document.getElementById("endSeconds"),
+        prepMessage: document.getElementById("prepMessage"),
+        preparationSeconds: document.getElementById("preparationSeconds"),
         presetCategory: document.getElementById("presetCategory"),
         presetRecipe: document.getElementById("presetRecipe"),
         presetSummary: document.getElementById("presetSummary"),
@@ -1917,6 +1980,8 @@
 
         elements.endMinutes.addEventListener("change", handleSetupInputChange);
         elements.endSeconds.addEventListener("change", handleSetupInputChange);
+        elements.prepMessage.addEventListener("input", handleSetupInputChange);
+        elements.preparationSeconds.addEventListener("change", handleSetupInputChange);
         elements.presetCategory.addEventListener("change", function () {
           elements.customPresetCategory.value = elements.presetCategory.value;
           renderPresetRecipeOptions();
@@ -2143,7 +2208,9 @@
           vibrationEnabled: vibrationEnabled,
           language: appState.settings.language,
           presetName: preset.name,
-          prepNote: preset.prepNote || ""
+          prepNote: preset.prepNote || "",
+          prepMessage: typeof preset.prepMessage === "string" ? preset.prepMessage : "",
+          preparationSeconds: sanitizePreparationSeconds(preset.preparationSeconds, DEFAULT_SETTINGS.preparationSeconds)
         };
 
         renderSetupScreen();
@@ -2191,6 +2258,8 @@
           name: name,
           summary: createRecipeSummary(appState.settings, true),
           prepNote: typedPrepNote || (categoryId === "ice" ? appState.settings.prepNote || "" : ""),
+          prepMessage: appState.settings.prepMessage || "",
+          preparationSeconds: appState.settings.preparationSeconds,
           extractionEndSeconds: appState.settings.extractionEndSeconds,
           stages: appState.settings.stages.map(function (stage) {
             return {
@@ -2337,7 +2406,9 @@
           vibrationEnabled: elements.vibrationEnabled.checked,
           language: appState.settings.language,
           presetName: customPreset.name,
-          prepNote: customPreset.prepNote
+          prepNote: customPreset.prepNote,
+          prepMessage: customPreset.prepMessage || "",
+          preparationSeconds: sanitizePreparationSeconds(customPreset.preparationSeconds, DEFAULT_SETTINGS.preparationSeconds)
         };
       }
 
@@ -2348,6 +2419,8 @@
           name: importedRecipe.name,
           summary: "",
           prepNote: importedRecipe.prepNote,
+          prepMessage: importedRecipe.prepMessage || "",
+          preparationSeconds: sanitizePreparationSeconds(importedRecipe.preparationSeconds, DEFAULT_SETTINGS.preparationSeconds),
           extractionEndSeconds: importedRecipe.extractionEndSeconds,
           stages: importedRecipe.stages.map(function (stage) {
             return {
@@ -2419,6 +2492,8 @@
           name: "",
           categoryId: "",
           prepNote: "",
+          prepMessage: "",
+          preparationSeconds: DEFAULT_SETTINGS.preparationSeconds,
           extractionEndSeconds: NaN,
           startTimes: [],
           amounts: [],
@@ -2445,6 +2520,14 @@
             }
             if (key === "prep") {
               appendRecipeImportPrepNote(imported, field.value);
+              return;
+            }
+            if (key === "prepMessage") {
+              imported.prepMessage = field.value.trim();
+              return;
+            }
+            if (key === "preparationSeconds") {
+              imported.preparationSeconds = parsePreparationSeconds(field.value);
               return;
             }
             if (key === "end") {
@@ -2617,6 +2700,8 @@
           categoryId: imported.categoryId || (fallbackCategory === "ice" ? "ice" : "hot"),
           name: name || t("importedRecipeFallbackName"),
           prepNote: imported.prepNote.trim().slice(0, 240),
+          prepMessage: imported.prepMessage.trim().slice(0, 80),
+          preparationSeconds: sanitizePreparationSeconds(imported.preparationSeconds, DEFAULT_SETTINGS.preparationSeconds),
           extractionEndSeconds: extractionEndSeconds,
           stages: stages
         };
@@ -2639,6 +2724,18 @@
 
       function splitRecipeImportLooseFieldLine(line) {
         var prefixes = [
+          "준비 문구",
+          "준비 시간",
+          "시작 문구",
+          "시작 대기시간",
+          "Ready Message",
+          "Start Message",
+          "Preparation Time",
+          "Ready Time",
+          "准备提示语",
+          "准备时间",
+          "準備メッセージ",
+          "準備時間",
           "원두량 및 사전준비사항",
           "원두량 및 사전 준비 사항",
           "Coffee Dose and Prep Notes",
@@ -2730,6 +2827,12 @@
         }
         if (["원두량및사전준비사항", "사전준비사항", "사전준비", "준비", "준비사항", "coffeedoseandprepnotes", "prep", "prepnote", "preparation", "咖啡粉量及事前准备", "事前准备", "准备", "準備", "コーヒー粉量と事前準備", "事前準備"].indexOf(normalized) >= 0) {
           return "prep";
+        }
+        if (["준비문구", "초기문구", "시작문구", "readymessage", "startmessage", "准备提示语", "开始提示语", "準備メッセージ", "開始メッセージ"].indexOf(normalized) >= 0) {
+          return "prepMessage";
+        }
+        if (["준비시간", "시작대기시간", "preparationtime", "readytime", "preparationseconds", "准备时间", "準備時間"].indexOf(normalized) >= 0) {
+          return "preparationSeconds";
         }
         if (["종료시간", "종료", "전체추출종료시간", "end", "endtime", "totaltime", "brewtime", "结束时间", "结束", "总萃取结束时间", "終了時間", "終了", "抽出終了時間"].indexOf(normalized) >= 0) {
           return "end";
@@ -2973,20 +3076,25 @@
           vibrationEnabled: Boolean(settings.vibrationEnabled),
           language: normalizeLanguage(settings.language),
           presetName: typeof settings.presetName === "string" ? settings.presetName : t("userSettings"),
-          prepNote: typeof settings.prepNote === "string" ? settings.prepNote : ""
+          prepNote: typeof settings.prepNote === "string" ? settings.prepNote : "",
+          prepMessage: typeof settings.prepMessage === "string" ? settings.prepMessage : "",
+          preparationSeconds: sanitizePreparationSeconds(settings.preparationSeconds, DEFAULT_SETTINGS.preparationSeconds)
         };
       }
 
       function loadSettings() {
         var fallback = createDefaultSettings();
         try {
-          var raw = window.localStorage.getItem(STORAGE_KEY) || window.localStorage.getItem(LEGACY_STORAGE_KEY);
+          var raw = window.localStorage.getItem(STORAGE_KEY) || window.localStorage.getItem(PREVIOUS_STORAGE_KEY) || window.localStorage.getItem(LEGACY_STORAGE_KEY);
           if (!raw) {
             return fallback;
           }
           var parsed = JSON.parse(raw);
           if (parsed && parsed.version === 1) {
             return migrateLegacySettings(parsed);
+          }
+          if (parsed && parsed.version === 2) {
+            return migratePreviousSettings(parsed);
           }
           if (!isValidSettingsShape(parsed)) {
             return fallback;
@@ -3049,6 +3157,8 @@
             stages: stages
           }, "나만의"),
           prepNote: typeof value.prepNote === "string" ? value.prepNote.slice(0, 240) : "",
+          prepMessage: typeof value.prepMessage === "string" ? value.prepMessage.slice(0, 80) : "",
+          preparationSeconds: sanitizePreparationSeconds(value.preparationSeconds, DEFAULT_SETTINGS.preparationSeconds),
           extractionEndSeconds: sanitizeNonNegativeNumber(value.extractionEndSeconds, DEFAULT_SETTINGS.extractionEndSeconds),
           stages: stages,
           isCustom: true,
@@ -3093,7 +3203,24 @@
           vibrationEnabled: value.vibrationEnabled,
           language: normalizeLanguage(value.language),
           presetName: t("userSettings"),
-          prepNote: ""
+          prepNote: "",
+          prepMessage: "",
+          preparationSeconds: DEFAULT_SETTINGS.preparationSeconds
+        });
+      }
+
+      function migratePreviousSettings(value) {
+        return sanitizeSettings({
+          version: SETTINGS_VERSION,
+          extractionEndSeconds: value.extractionEndSeconds,
+          stages: Array.isArray(value.stages) ? value.stages : [],
+          soundEnabled: value.soundEnabled,
+          vibrationEnabled: value.vibrationEnabled,
+          language: value.language,
+          presetName: value.presetName,
+          prepNote: value.prepNote,
+          prepMessage: "",
+          preparationSeconds: DEFAULT_SETTINGS.preparationSeconds
         });
       }
 
@@ -3106,7 +3233,9 @@
           vibrationEnabled: Boolean(value.vibrationEnabled),
           language: normalizeLanguage(value.language),
           presetName: typeof value.presetName === "string" ? value.presetName : t("userSettings"),
-          prepNote: typeof value.prepNote === "string" ? value.prepNote : ""
+          prepNote: typeof value.prepNote === "string" ? value.prepNote : "",
+          prepMessage: typeof value.prepMessage === "string" ? value.prepMessage.slice(0, 80) : "",
+          preparationSeconds: sanitizePreparationSeconds(value.preparationSeconds, DEFAULT_SETTINGS.preparationSeconds)
         };
 
         value.stages.slice(0, MAX_STAGES).forEach(function (stage, index) {
@@ -3133,6 +3262,7 @@
       function populateStaticTimeSelectors() {
         elements.endMinutes.innerHTML = createTimeSelectOptions(TIME_SELECTOR_MAX_MINUTES, 0);
         elements.endSeconds.innerHTML = createTimeSelectOptions(59, 0);
+        elements.preparationSeconds.innerHTML = createTimeSelectOptions(MAX_PREPARATION_SECONDS, DEFAULT_SETTINGS.preparationSeconds);
       }
 
       function createTimeSelectOptions(maxValue, selectedValue) {
@@ -3158,6 +3288,8 @@
         var endParts = secondsToParts(appState.settings.extractionEndSeconds);
         setTimeSelectValue(elements.endMinutes, endParts.minutes, TIME_SELECTOR_MAX_MINUTES);
         setTimeSelectValue(elements.endSeconds, endParts.seconds, 59);
+        elements.prepMessage.value = appState.settings.prepMessage || t("defaultPrepMessage");
+        setTimeSelectValue(elements.preparationSeconds, appState.settings.preparationSeconds, MAX_PREPARATION_SECONDS);
         elements.soundEnabled.checked = appState.settings.soundEnabled;
         elements.vibrationEnabled.checked = appState.settings.vibrationEnabled;
         elements.customPresetNote.value = appState.settings.prepNote || "";
@@ -3256,6 +3388,8 @@
         var endMinutes = parseWholeNumber(elements.endMinutes.value);
         var endSeconds = parseWholeNumber(elements.endSeconds.value);
         appState.settings.extractionEndSeconds = combineTimeParts(endMinutes, endSeconds);
+        appState.settings.prepMessage = elements.prepMessage.value.trim().slice(0, 80);
+        appState.settings.preparationSeconds = sanitizePreparationSeconds(elements.preparationSeconds.value, DEFAULT_SETTINGS.preparationSeconds);
         appState.settings.soundEnabled = elements.soundEnabled.checked;
         appState.settings.vibrationEnabled = elements.vibrationEnabled.checked;
 
@@ -3483,6 +3617,7 @@
         appState.mode = "running";
         appState.triggeredEvents = {};
         appState.elapsedSeconds = 0;
+        appState.isPreparing = appState.activeRecipe.preparationSeconds > 0;
         appState.lastRenderedSecond = -1;
         appState.accumulatedPauseMs = 0;
         appState.pausedAtPerfMs = 0;
@@ -3516,7 +3651,9 @@
           soundEnabled: Boolean(settings.soundEnabled),
           vibrationEnabled: Boolean(settings.vibrationEnabled),
           presetName: typeof settings.presetName === "string" ? settings.presetName : "사용자 설정",
-          prepNote: typeof settings.prepNote === "string" ? settings.prepNote : ""
+          prepNote: typeof settings.prepNote === "string" ? settings.prepNote : "",
+          prepMessage: typeof settings.prepMessage === "string" && settings.prepMessage.trim() ? settings.prepMessage.trim() : t("defaultPrepMessage"),
+          preparationSeconds: sanitizePreparationSeconds(settings.preparationSeconds, DEFAULT_SETTINGS.preparationSeconds)
         };
       }
 
@@ -3526,7 +3663,7 @@
         elements.timerScreen.classList.remove("hidden");
         elements.timerScreen.classList.remove("is-finished");
         elements.pauseButton.textContent = t("pause");
-        elements.timerStateBadge.textContent = t("running");
+        elements.timerStateBadge.textContent = appState.activeRecipe.preparationSeconds > 0 ? t("preparingState") : t("running");
         elements.progressEndTimeText.textContent = secondsToTimeString(appState.activeRecipe.extractionEndSeconds);
         if (appState.activeRecipe.prepNote) {
           elements.timerPrepNote.textContent = appState.activeRecipe.prepNote;
@@ -3544,7 +3681,20 @@
         }
 
         var rawElapsedMs = performance.now() - appState.startPerfMs - appState.accumulatedPauseMs;
-        var elapsedSeconds = Math.max(0, rawElapsedMs / 1000 * appState.speedMultiplier);
+        var runningSeconds = Math.max(0, rawElapsedMs / 1000 * appState.speedMultiplier);
+        var preparationSeconds = appState.activeRecipe.preparationSeconds;
+
+        if (runningSeconds < preparationSeconds) {
+          appState.isPreparing = true;
+          appState.elapsedSeconds = 0;
+          renderPreparation(preparationSeconds - runningSeconds);
+          appState.rafId = window.requestAnimationFrame(updateTimerFrame);
+          return;
+        }
+
+        appState.isPreparing = false;
+        elements.timerStateBadge.textContent = t("running");
+        var elapsedSeconds = runningSeconds - preparationSeconds;
         appState.elapsedSeconds = Math.min(elapsedSeconds, appState.activeRecipe.extractionEndSeconds);
 
         if (appState.elapsedSeconds >= appState.activeRecipe.extractionEndSeconds) {
@@ -3554,6 +3704,20 @@
 
         renderTimer(appState.elapsedSeconds);
         appState.rafId = window.requestAnimationFrame(updateTimerFrame);
+      }
+
+      function renderPreparation(remainingSeconds) {
+        elements.timerMessage.textContent = appState.activeRecipe.prepMessage || t("defaultPrepMessage");
+        elements.timerMessage.classList.add("long-message");
+        elements.countdownText.textContent = "";
+        elements.elapsedTimeText.textContent = secondsToTimeString(Math.ceil(remainingSeconds));
+        elements.progressBar.style.width = "0%";
+        elements.currentStageInfo.textContent = t("ready");
+        elements.currentAmountInfo.textContent = "0g";
+        elements.cumulativeAmountInfo.textContent = "0g";
+        elements.nextStageInfo.textContent = "00:00";
+        elements.timerStateBadge.textContent = t("preparingState");
+        applyTimerTheme(READY_THEME);
       }
 
       function renderTimer(elapsedSeconds) {
@@ -3649,6 +3813,7 @@
         }
         cancelAnimationFrameIfNeeded();
         appState.mode = "finished";
+        appState.isPreparing = false;
         appState.elapsedSeconds = appState.activeRecipe.extractionEndSeconds;
         elements.elapsedTimeText.textContent = "00:00";
         elements.progressBar.style.width = "100%";
@@ -3721,7 +3886,7 @@
         appState.pausedAtPerfMs = 0;
         appState.mode = "running";
         elements.pauseButton.textContent = t("pause");
-        elements.timerStateBadge.textContent = t("running");
+        elements.timerStateBadge.textContent = appState.isPreparing ? t("preparingState") : t("running");
         requestWakeLock();
         updateTimerFrame();
       }
@@ -3746,6 +3911,7 @@
         appState.mode = "editing";
         appState.activeRecipe = null;
         appState.elapsedSeconds = 0;
+        appState.isPreparing = false;
         elements.timerScreen.classList.add("hidden");
         elements.timerScreen.classList.remove("is-finished");
         elements.setupScreen.classList.remove("hidden");
@@ -3763,6 +3929,7 @@
         cancelAnimationFrameIfNeeded();
         appState.mode = "running";
         appState.elapsedSeconds = 0;
+        appState.isPreparing = appState.activeRecipe.preparationSeconds > 0;
         appState.triggeredEvents = {};
         appState.accumulatedPauseMs = 0;
         appState.pausedAtPerfMs = 0;
@@ -3770,7 +3937,7 @@
         elements.timerScreen.classList.remove("is-finished");
         elements.timerMessage.classList.remove("long-message");
         elements.pauseButton.textContent = t("pause");
-        elements.timerStateBadge.textContent = t("running");
+        elements.timerStateBadge.textContent = appState.isPreparing ? t("preparingState") : t("running");
         activateAudioContext();
         requestWakeLock();
         updateTimerFrame();
@@ -3942,6 +4109,9 @@
 
       function calculateStageAmount(stage) {
         var amount = Number(stage.amountGrams);
+        if (!isFiniteNumber(amount)) {
+          amount = Number(stage.amount);
+        }
         return isFiniteNumber(amount) ? amount : 0;
       }
 
@@ -3951,6 +4121,20 @@
           total += calculateStageAmount(stage);
           return total;
         });
+      }
+
+      function parsePreparationSeconds(value) {
+        var match = String(value || "").match(/\d+(?:\.\d+)?/);
+        return match ? sanitizePreparationSeconds(match[0], DEFAULT_SETTINGS.preparationSeconds) : DEFAULT_SETTINGS.preparationSeconds;
+      }
+
+      function sanitizePreparationSeconds(value, fallback) {
+        var fallbackValue = Number.isFinite(Number(fallback)) ? Number(fallback) : 5;
+        var seconds = Number(value);
+        if (!Number.isFinite(seconds)) {
+          seconds = fallbackValue;
+        }
+        return Math.min(MAX_PREPARATION_SECONDS, Math.max(0, Math.floor(seconds)));
       }
 
       function parseWholeNumber(value) {
