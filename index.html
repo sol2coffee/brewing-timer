@@ -156,9 +156,6 @@
     }
 
     .status-note {
-      display: flex;
-      gap: 8px;
-      align-items: flex-start;
       margin: 0 0 16px;
       padding: 11px 12px;
       border: 1px solid rgba(47, 107, 84, 0.18);
@@ -189,15 +186,6 @@
       color: var(--muted);
       font-size: 12px;
       font-weight: 800;
-    }
-
-    .status-dot {
-      flex: 0 0 auto;
-      width: 8px;
-      height: 8px;
-      margin-top: 6px;
-      border-radius: 50%;
-      background: currentColor;
     }
 
     .recipe-panel {
@@ -990,7 +978,6 @@
       </header>
 
       <p class="status-note">
-        <span class="status-dot" aria-hidden="true"></span>
         <span id="wakeLockHint" class="wake-lock-hint">• 추출 중에는 화면 자동 꺼짐을 해제해주세요.
 • 아이폰의 경우 사파리 브라우저에서 공유 버튼 → 홈 화면에 추가 웹앱으로 설치할 수 있습니다.</span>
       </p>
