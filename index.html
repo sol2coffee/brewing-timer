@@ -1403,6 +1403,18 @@
           label: "솔이커피 오리지널 레시피",
           recipes: [
             {
+              id: "built-in-sol2coffee-10g-hot-366",
+              name: "10g HOT 366 (솔이커피)",
+              prepNote: "원두 10g, 분쇄도 코만단테 C40 21클릭, 물온도 93℃, 뜸·1차 추출은 슬로우 푸어, 2차 추출은 강하게 푸어, 끝까지 추출",
+              preparationSeconds: 5,
+              extractionEndSeconds: 120,
+              stages: [
+                { startSeconds: 0, amountGrams: 30 },
+                { startSeconds: 30, amountGrams: 60 },
+                { startSeconds: 60, amountGrams: 60 }
+              ]
+            },
+            {
               id: "built-in-sol2coffee-12g-ice-origami-pin-345",
               name: "12g ICE 오리가미 핀 345 (솔이커피)",
               prepNote: "원두 12g, 오리가미 핀, 분쇄도 코만단테 C40 25클릭, 물온도 93℃, 서버 얼음 60g",
@@ -1489,18 +1501,40 @@
       var originalRecipeGroup = RECIPE_PRESETS[2];
       var hotRecipeGroup = RECIPE_PRESETS[0];
       var iceRecipeGroup = RECIPE_PRESETS[1];
+      originalRecipeGroup.recipes = originalRecipeGroup.recipes.concat([
+        Object.assign({}, hotRecipeGroup.recipes[0], {
+          id: "built-in-sol2coffee-original-hot-clean-acidity",
+          name: "깔끔 산미 HOT (솔이커피)"
+        }),
+        Object.assign({}, iceRecipeGroup.recipes[0], {
+          id: "built-in-sol2coffee-original-ice-clean-acidity",
+          name: "깔끔 산미 ICE (솔이커피)"
+        }),
+        Object.assign({}, hotRecipeGroup.recipes[1], {
+          id: "built-in-sol2coffee-original-hot-strong-sweetness",
+          name: "짱짱한 단맛 HOT (솔이커피)"
+        }),
+        Object.assign({}, iceRecipeGroup.recipes[1], {
+          id: "built-in-sol2coffee-original-ice-strong-sweetness",
+          name: "짱짱한 단맛 ICE (솔이커피)"
+        }),
+        Object.assign({}, iceRecipeGroup.recipes[2], {
+          id: "built-in-sol2coffee-original-ice-first-meeting-beans",
+          name: "첫만남 원두 레시피 ICE (솔이커피)"
+        })
+      ]);
       RECIPE_PRESETS.splice(2, 1);
       RECIPE_PRESETS.unshift(originalRecipeGroup);
       hotRecipeGroup.recipes = hotRecipeGroup.recipes.concat([
-        originalRecipeGroup.recipes[2],
         originalRecipeGroup.recipes[3],
-        originalRecipeGroup.recipes[5]
+        originalRecipeGroup.recipes[4],
+        originalRecipeGroup.recipes[6]
       ]);
       iceRecipeGroup.recipes = iceRecipeGroup.recipes.concat([
-        originalRecipeGroup.recipes[0],
         originalRecipeGroup.recipes[1],
-        originalRecipeGroup.recipes[4],
-        originalRecipeGroup.recipes[5]
+        originalRecipeGroup.recipes[2],
+        originalRecipeGroup.recipes[5],
+        originalRecipeGroup.recipes[6]
       ]);
 
       var TRANSLATIONS = {
