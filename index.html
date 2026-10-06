@@ -132,19 +132,21 @@
       padding: 10px 2px 16px;
     }
 
-    .kicker {
-      margin: 0;
-      color: var(--accent);
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-    }
-
     h1 {
       margin: 4px 0 5px;
       font-size: clamp(29px, 9vw, 46px);
       line-height: 0.98;
       letter-spacing: 0;
+    }
+
+    .app-title-by {
+      margin-left: 6px;
+      color: var(--accent);
+      font-size: clamp(10px, 2.8vw, 14px);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      vertical-align: baseline;
     }
 
     .subtitle {
@@ -966,8 +968,7 @@
     <main id="setupScreen" class="setup-screen" aria-labelledby="appTitle">
       <header class="setup-header">
         <div>
-          <p class="kicker">MOBILE POUR OVER</p>
-          <h1 id="appTitle">BREWING TIMER</h1>
+          <h1 id="appTitle">BREWING TIMER <span class="app-title-by">by sol2coffee</span></h1>
           <p class="subtitle" data-i18n="subtitle">나만의 푸어링 레시피를 설정하세요</p>
         </div>
       </header>
@@ -1248,7 +1249,7 @@
           recipes: [
             {
               id: "built-in-hot-clean-acidity",
-              name: "깔끔 산미 (앱개발자 추천)",
+              name: "깔끔 산미 (솔이커피)",
               prepNote: "원두 20g, 분쇄도 코만단테 C40 28클릭, 물온도 92도",
               extractionEndSeconds: 130,
               stages: [
@@ -1260,7 +1261,7 @@
             },
             {
               id: "built-in-hot-strong-sweetness",
-              name: "짱짱한 단맛 (앱개발자 추천)",
+              name: "짱짱한 단맛 (솔이커피)",
               prepNote: "원두 20g, 분쇄도 코만단테 C40 28클릭, 물온도 92도",
               extractionEndSeconds: 150,
               stages: [
@@ -1344,7 +1345,7 @@
           recipes: [
             {
               id: "built-in-ice-clean-acidity",
-              name: "깔끔 산미 (앱개발자 추천)",
+              name: "깔끔 산미 (솔이커피)",
               prepNote: "원두 20g, 분쇄도 코만단테 C40 28클릭, 물온도 92도, 추출전 서버에 얼음 가득, 추출후 스월링 열바퀴 후 새 얼음컵에 따라주기",
               extractionEndSeconds: 140,
               stages: [
@@ -1356,7 +1357,7 @@
             },
             {
               id: "built-in-ice-strong-sweetness",
-              name: "짱짱한 단맛 (앱개발자 추천)",
+              name: "짱짱한 단맛 (솔이커피)",
               prepNote: "원두 20g, 분쇄도 코만단테 C40 28클릭, 물온도 92도, 추출전 서버에 얼음 가득, 추출후 스월링 열바퀴 후 새 얼음컵에 따라주기",
               extractionEndSeconds: 140,
               stages: [
@@ -1368,7 +1369,7 @@
             },
             {
               id: "built-in-ice-first-meeting-beans",
-              name: "첫만남 원두 레시피 (앱개발자 추천)",
+              name: "첫만남 원두 레시피 (솔이커피)",
               prepNote: "원두 20g, 분쇄도 코만단테 C40 25클릭, 물온도 92도, 추출전 서버에 얼음 가득, 추출후 스월링 열바퀴 후 새 얼음컵에 따라주기",
               extractionEndSeconds: 140,
               stages: [
@@ -1391,8 +1392,111 @@
               ]
             }
           ]
+        },
+        {
+          id: "sol2coffee-original",
+          label: "솔이커피 오리지널 레시피",
+          recipes: [
+            {
+              id: "built-in-sol2coffee-12g-ice-origami-pin-345",
+              name: "12g ICE 오리가미 핀 345 (솔이커피)",
+              prepNote: "원두 12g, 오리가미 핀, 분쇄도 코만단테 C40 25클릭, 물온도 93℃, 서버 얼음 60g",
+              prepMessage: "서버에 얼음 60g을 미리 넣어주세요",
+              preparationSeconds: 5,
+              extractionEndSeconds: 90,
+              stages: [
+                { startSeconds: 0, amountGrams: 30 },
+                { startSeconds: 30, amountGrams: 40 },
+                { startSeconds: 60, amountGrams: 50 }
+              ]
+            },
+            {
+              id: "built-in-sol2coffee-15g-ice-conical-3633",
+              name: "15g ICE 원추형 3633 (솔이커피)",
+              prepNote: "원두 15g, 원추형 드리퍼, 분쇄도 코만단테 C40 24클릭, 물온도 92℃, 서버 얼음 80g",
+              prepMessage: "서버에 얼음 80g을 미리 넣어주세요",
+              preparationSeconds: 5,
+              extractionEndSeconds: 120,
+              stages: [
+                { startSeconds: 0, amountGrams: 30 },
+                { startSeconds: 30, amountGrams: 60 },
+                { startSeconds: 60, amountGrams: 30 },
+                { startSeconds: 90, amountGrams: 30 }
+              ]
+            },
+            {
+              id: "built-in-sol2coffee-15g-hot-conical-3966",
+              name: "15g HOT 원추형 3966 (솔이커피)",
+              prepNote: "원두 15g, 원추형 드리퍼, 분쇄도 코만단테 C40 24클릭, 물온도 92℃",
+              preparationSeconds: 5,
+              extractionEndSeconds: 140,
+              stages: [
+                { startSeconds: 0, amountGrams: 30 },
+                { startSeconds: 30, amountGrams: 90 },
+                { startSeconds: 60, amountGrams: 60 },
+                { startSeconds: 90, amountGrams: 60 }
+              ]
+            },
+            {
+              id: "built-in-sol2coffee-15g-hot-kalita-wave-155-5766",
+              name: "15g HOT 칼리타 웨이브 155 5766 (솔이커피)",
+              prepNote: "원두 15g, 칼리타 웨이브 155, 분쇄도 코만단테 C40 25클릭, 물온도 93℃",
+              preparationSeconds: 5,
+              extractionEndSeconds: 130,
+              stages: [
+                { startSeconds: 0, amountGrams: 50 },
+                { startSeconds: 30, amountGrams: 70 },
+                { startSeconds: 60, amountGrams: 60 },
+                { startSeconds: 90, amountGrams: 60 }
+              ]
+            },
+            {
+              id: "built-in-sol2coffee-30g-ice-conical-6966",
+              name: "30g ICE 원추형 6966 (솔이커피)",
+              prepNote: "원두 30g, 원추형 드리퍼, 분쇄도 코만단테 C40 25클릭, 물온도 93℃, 서버 얼음 150g",
+              prepMessage: "서버에 얼음 150g을 미리 넣어주세요",
+              preparationSeconds: 5,
+              extractionEndSeconds: 135,
+              stages: [
+                { startSeconds: 0, amountGrams: 60 },
+                { startSeconds: 30, amountGrams: 90 },
+                { startSeconds: 60, amountGrams: 60 },
+                { startSeconds: 90, amountGrams: 60 }
+              ]
+            },
+            {
+              id: "built-in-sol2coffee-30g-hot-ice-one-cup-conical-6966",
+              name: "30g 핫앤아이스 원큐 원추형 6966 (솔이커피)",
+              prepNote: "원두 30g, 원추형 드리퍼, 분쇄도 코만단테 C40 24클릭, 물온도 93℃, 추출 후 두 잔으로 나눠 한 잔은 얼음 100g, 한 잔은 뜨거운 물 50g으로 바이패스",
+              preparationSeconds: 5,
+              extractionEndSeconds: 160,
+              stages: [
+                { startSeconds: 0, amountGrams: 60 },
+                { startSeconds: 40, amountGrams: 90 },
+                { startSeconds: 80, amountGrams: 60 },
+                { startSeconds: 120, amountGrams: 60 }
+              ]
+            }
+          ]
         }
       ];
+
+      var originalRecipeGroup = RECIPE_PRESETS[2];
+      var hotRecipeGroup = RECIPE_PRESETS[0];
+      var iceRecipeGroup = RECIPE_PRESETS[1];
+      RECIPE_PRESETS.splice(2, 1);
+      RECIPE_PRESETS.unshift(originalRecipeGroup);
+      hotRecipeGroup.recipes = hotRecipeGroup.recipes.concat([
+        originalRecipeGroup.recipes[2],
+        originalRecipeGroup.recipes[3],
+        originalRecipeGroup.recipes[5]
+      ]);
+      iceRecipeGroup.recipes = iceRecipeGroup.recipes.concat([
+        originalRecipeGroup.recipes[0],
+        originalRecipeGroup.recipes[1],
+        originalRecipeGroup.recipes[4],
+        originalRecipeGroup.recipes[5]
+      ]);
 
       var TRANSLATIONS = {
         ko: {
@@ -2011,7 +2115,9 @@
         elements.prepMessage.addEventListener("input", handleSetupInputChange);
         elements.preparationSeconds.addEventListener("change", handleSetupInputChange);
         elements.presetCategory.addEventListener("change", function () {
-          elements.customPresetCategory.value = elements.presetCategory.value;
+          if (elements.presetCategory.value === "hot" || elements.presetCategory.value === "ice") {
+            elements.customPresetCategory.value = elements.presetCategory.value;
+          }
           renderPresetRecipeOptions();
           updatePresetSummary();
         });
@@ -2134,7 +2240,9 @@
           elements.presetCategory.appendChild(option);
         });
         renderPresetRecipeOptions();
-        elements.customPresetCategory.value = elements.presetCategory.value || RECIPE_PRESETS[0].id;
+        if (elements.presetCategory.value === "hot" || elements.presetCategory.value === "ice") {
+          elements.customPresetCategory.value = elements.presetCategory.value;
+        }
         updatePresetSummary();
       }
 
