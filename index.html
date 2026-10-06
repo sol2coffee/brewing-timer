@@ -169,6 +169,10 @@
       line-height: 1.45;
     }
 
+    .wake-lock-hint {
+      white-space: pre-line;
+    }
+
     .language-card {
       display: grid;
       grid-template-columns: auto minmax(128px, 1fr);
@@ -987,7 +991,8 @@
 
       <p class="status-note">
         <span class="status-dot" aria-hidden="true"></span>
-        <span id="wakeLockHint">추출 중에는 화면 자동 꺼짐을 해제해주세요. 아이폰의 경우 사파리에서 공유 버튼 → 홈 화면에 추가 웹앱으로 설치할 수 있습니다.</span>
+        <span id="wakeLockHint" class="wake-lock-hint">• 추출 중에는 화면 자동 꺼짐을 해제해주세요.
+• 아이폰의 경우 사파리 브라우저에서 공유 버튼 → 홈 화면에 추가 웹앱으로 설치할 수 있습니다.</span>
       </p>
 
       <section class="recipe-panel" aria-label="브루잉 레시피 설정" data-i18n-aria-label="setupAria">
@@ -1516,9 +1521,9 @@
           languageLabel: "언어",
           subtitle: "나만의 푸어링 레시피를 설정하세요",
           resetSettingsLabel: "설정값 초기화",
-          wakeKeepScreen: "추출 중에는 화면 자동 꺼짐을 해제해주세요. 아이폰의 경우 사파리에서 공유 버튼 → 홈 화면에 추가 웹앱으로 설치할 수 있습니다.",
-          wakeActive: "추출 중에는 화면 자동 꺼짐을 해제해주세요. 아이폰의 경우 사파리에서 공유 버튼 → 홈 화면에 추가 웹앱으로 설치할 수 있습니다.",
-          wakeAfterStart: "추출 중에는 화면 자동 꺼짐을 해제해주세요. 아이폰의 경우 사파리에서 공유 버튼 → 홈 화면에 추가 웹앱으로 설치할 수 있습니다.",
+          wakeKeepScreen: "• 추출 중에는 화면 자동 꺼짐을 해제해주세요.\n• 아이폰의 경우 사파리 브라우저에서 공유 버튼 → 홈 화면에 추가 웹앱으로 설치할 수 있습니다.",
+          wakeActive: "• 추출 중에는 화면 자동 꺼짐을 해제해주세요.\n• 아이폰의 경우 사파리 브라우저에서 공유 버튼 → 홈 화면에 추가 웹앱으로 설치할 수 있습니다.",
+          wakeAfterStart: "• 추출 중에는 화면 자동 꺼짐을 해제해주세요.\n• 아이폰의 경우 사파리 브라우저에서 공유 버튼 → 홈 화면에 추가 웹앱으로 설치할 수 있습니다.",
           setupAria: "브루잉 레시피 설정",
           savedRecipesTitle: "저장된 레시피",
           categoryLabel: "소분류",
