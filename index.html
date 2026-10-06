@@ -2132,10 +2132,18 @@
         elements.deleteCustomPresetButton.addEventListener("click", requestDeleteSelectedCustomPreset);
         elements.importRecipeButton.addEventListener("click", requestRecipeImportFile);
         elements.recipeImportFile.addEventListener("change", handleRecipeImportFileChange);
-        elements.soundEnabled.addEventListener("change", handleSetupInputChange);
+        elements.soundEnabled.addEventListener("change", function (event) {
+          handleSetupInputChange(event);
+          if (elements.soundEnabled.checked) {
+            unlockAudioContext();
+            playSoundPreview();
+          }
+        });
         elements.soundVolume.addEventListener("input", handleSoundVolumeInput);
         elements.soundVolume.addEventListener("change", handleSoundVolumeCommit);
         elements.addStageButton.addEventListener("click", addStage);
+        elements.startButton.addEventListener("pointerdown", unlockAudioContext, { passive: true });
+        elements.startButton.addEventListener("touchstart", unlockAudioContext, { passive: true });
         elements.startButton.addEventListener("click", startTimer);
         elements.speedSelect.addEventListener("change", function () {
           appState.speedMultiplier = parseFloat(elements.speedSelect.value) || 1;
@@ -3366,7 +3374,7 @@
           version: SETTINGS_VERSION,
           extractionEndSeconds: sanitizeNonNegativeNumber(value.extractionEndSeconds, DEFAULT_SETTINGS.extractionEndSeconds),
           stages: [],
-          soundEnabled: Boolean(value.soundEnabled),
+          soundEnabled: typeof value.soundEnabled === "boolean" ? value.soundEnabled : DEFAULT_SETTINGS.soundEnabled,
           soundVolume: sanitizeSoundVolume(value.soundVolume, DEFAULT_SETTINGS.soundVolume),
           language: normalizeLanguage(value.language),
           presetName: typeof value.presetName === "string" ? value.presetName : t("userSettings"),
@@ -3780,7 +3788,7 @@
         appState.speedMultiplier = appState.debugEnabled ? parseFloat(elements.speedSelect.value) || 1 : 1;
 
         saveSettings();
-        activateAudioContext();
+        unlockAudioContext();
         requestWakeLock();
         showTimerScreen();
         updateTimerFrame();
@@ -4090,7 +4098,7 @@
         elements.timerMessage.classList.remove("long-message");
         elements.pauseButton.textContent = t("pause");
         elements.timerStateBadge.textContent = appState.isPreparing ? t("preparingState") : t("running");
-        activateAudioContext();
+        unlockAudioContext();
         requestWakeLock();
         updateTimerFrame();
       }
@@ -4108,21 +4116,46 @@
 
       function activateAudioContext() {
         if (!appState.settings.soundEnabled) {
-          return;
+          return null;
         }
         try {
           var AudioContextClass = window.AudioContext || window.webkitAudioContext;
           if (!AudioContextClass) {
-            return;
+            return null;
           }
           if (!appState.audioContext) {
             appState.audioContext = new AudioContextClass();
           }
           if (appState.audioContext.state === "suspended") {
-            appState.audioContext.resume();
+            var resumeResult = appState.audioContext.resume();
+            if (resumeResult && typeof resumeResult.catch === "function") {
+              resumeResult.catch(function () {
+                appState.audioContext = null;
+              });
+            }
           }
+          return appState.audioContext;
         } catch (error) {
           appState.audioContext = null;
+          return null;
+        }
+      }
+
+      function unlockAudioContext() {
+        var context = activateAudioContext();
+        if (!context) {
+          return;
+        }
+        try {
+          var oscillator = context.createOscillator();
+          var gain = context.createGain();
+          gain.gain.setValueAtTime(0.0001, context.currentTime);
+          oscillator.connect(gain);
+          gain.connect(context.destination);
+          oscillator.start();
+          oscillator.stop(context.currentTime + 0.02);
+        } catch (error) {
+          // 모바일 브라우저가 오디오 잠금 해제를 거부해도 타이머는 계속 작동한다.
         }
       }
 
