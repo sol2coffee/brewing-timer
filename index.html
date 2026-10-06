@@ -342,6 +342,11 @@
       gap: 12px;
     }
 
+    .stage-add-button {
+      width: 100%;
+      margin-top: 12px;
+    }
+
     .stage-card {
       display: grid;
       gap: 13px;
@@ -471,6 +476,13 @@
       text-align: right;
     }
 
+    .sound-hint {
+      margin: -2px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
     .debug-panel {
       display: grid;
       gap: 8px;
@@ -558,7 +570,7 @@
 
     .bottom-inner {
       display: grid;
-      grid-template-columns: minmax(112px, 0.65fr) 1fr;
+      grid-template-columns: 1fr;
       gap: 10px;
       width: min(100%, 760px);
       margin: 0 auto;
@@ -975,7 +987,7 @@
 
       <p class="status-note">
         <span class="status-dot" aria-hidden="true"></span>
-        <span id="wakeLockHint">정확한 타이머 사용을 위해 추출 중에는 화면을 켜두세요.</span>
+        <span id="wakeLockHint">추출 중에는 화면 자동 꺼짐을 해제해주세요. 아이폰의 경우 사파리에서 공유 버튼 → 홈 화면에 추가 웹앱으로 설치할 수 있습니다.</span>
       </p>
 
       <section class="recipe-panel" aria-label="브루잉 레시피 설정" data-i18n-aria-label="setupAria">
@@ -1058,6 +1070,7 @@
 
         <h2 class="section-title" data-i18n="pouringStagesTitle">푸어링 차수</h2>
         <div id="stageList" class="stage-list"></div>
+        <button id="addStageButton" class="btn secondary stage-add-button" type="button" data-i18n="addStage">차수 추가</button>
 
         <div class="settings-row" aria-label="알림 설정" data-i18n-aria-label="notificationSettingsAria">
           <div class="toggle sound-toggle">
@@ -1067,6 +1080,7 @@
             <input id="soundEnabled" type="checkbox" aria-labelledby="soundEnabledLabel">
           </div>
         </div>
+        <p class="sound-hint" data-i18n="mobileSoundHint">모바일환경에서는 알림음을 켜주세요</p>
 
         <div id="debugPanel" class="debug-panel hidden">
           <label for="speedSelect" data-i18n="debugSpeedLabel">테스트 배속</label>
@@ -1115,7 +1129,6 @@
 
     <div id="setupBottomBar" class="bottom-bar">
       <div class="bottom-inner">
-        <button id="addStageButton" class="btn secondary" type="button" data-i18n="addStage">차수 추가</button>
         <button id="startButton" class="btn primary" type="button">START</button>
       </div>
     </div>
@@ -1503,9 +1516,9 @@
           languageLabel: "언어",
           subtitle: "나만의 푸어링 레시피를 설정하세요",
           resetSettingsLabel: "설정값 초기화",
-          wakeKeepScreen: "정확한 타이머 사용을 위해 추출 중에는 화면을 켜두세요.",
-          wakeActive: "추출 중 화면 꺼짐 방지가 활성화되었습니다.",
-          wakeAfterStart: "START 후 지원 브라우저에서는 화면 꺼짐 방지를 요청합니다.",
+          wakeKeepScreen: "추출 중에는 화면 자동 꺼짐을 해제해주세요. 아이폰의 경우 사파리에서 공유 버튼 → 홈 화면에 추가 웹앱으로 설치할 수 있습니다.",
+          wakeActive: "추출 중에는 화면 자동 꺼짐을 해제해주세요. 아이폰의 경우 사파리에서 공유 버튼 → 홈 화면에 추가 웹앱으로 설치할 수 있습니다.",
+          wakeAfterStart: "추출 중에는 화면 자동 꺼짐을 해제해주세요. 아이폰의 경우 사파리에서 공유 버튼 → 홈 화면에 추가 웹앱으로 설치할 수 있습니다.",
           setupAria: "브루잉 레시피 설정",
           savedRecipesTitle: "저장된 레시피",
           categoryLabel: "소분류",
@@ -1543,6 +1556,7 @@
           pouringStagesTitle: "푸어링 차수",
           notificationSettingsAria: "알림 설정",
           soundLabel: "알림음",
+          mobileSoundHint: "모바일환경에서는 알림음을 켜주세요",
           soundVolumeAria: "알림음 볼륨",
           debugSpeedLabel: "테스트 배속",
           speed1: "1배",
@@ -1660,6 +1674,7 @@
           pouringStagesTitle: "Pouring Stages",
           notificationSettingsAria: "Notification settings",
           soundLabel: "Sound",
+          mobileSoundHint: "On mobile, please turn on sound notifications.",
           soundVolumeAria: "Sound volume",
           debugSpeedLabel: "Test Speed",
           speed1: "1x",
@@ -1777,6 +1792,7 @@
           pouringStagesTitle: "注水段数",
           notificationSettingsAria: "提醒设置",
           soundLabel: "提示音",
+          mobileSoundHint: "在移动设备上，请开启提示音。",
           soundVolumeAria: "提示音音量",
           debugSpeedLabel: "测试倍速",
           speed1: "1倍",
@@ -1894,6 +1910,7 @@
           pouringStagesTitle: "注湯ステージ",
           notificationSettingsAria: "通知設定",
           soundLabel: "通知音",
+          mobileSoundHint: "モバイルでは通知音をオンにしてください。",
           soundVolumeAria: "通知音の音量",
           debugSpeedLabel: "テスト速度",
           speed1: "1倍",
