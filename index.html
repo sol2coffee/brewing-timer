@@ -1254,7 +1254,7 @@
           recipes: [
             {
               id: "built-in-hot-clean-acidity",
-              name: "깔끔 산미 (솔이커피)",
+              name: "무적 산미 (솔이커피)",
               prepNote: "원두 20g, 분쇄도 코만단테 C40 28클릭, 물온도 92도",
               extractionEndSeconds: 130,
               stages: [
@@ -1350,11 +1350,11 @@
           recipes: [
             {
               id: "built-in-ice-clean-acidity",
-              name: "깔끔 산미 (솔이커피)",
+              name: "무적 산미 (솔이커피)",
               prepNote: "원두 20g, 분쇄도 코만단테 C40 28클릭, 물온도 92도, 추출전 서버에 얼음 가득, 추출후 스월링 열바퀴 후 새 얼음컵에 따라주기",
               extractionEndSeconds: 140,
               stages: [
-                { startSeconds: 0, amountGrams: 50 },
+                { startSeconds: 0, amountGrams: 40 },
                 { startSeconds: 30, amountGrams: 50 },
                 { startSeconds: 60, amountGrams: 50 },
                 { startSeconds: 90, amountGrams: 50 }
@@ -1379,8 +1379,8 @@
               extractionEndSeconds: 140,
               stages: [
                 { startSeconds: 0, amountGrams: 40 },
-                { startSeconds: 30, amountGrams: 50 },
-                { startSeconds: 60, amountGrams: 60 },
+                { startSeconds: 30, amountGrams: 60 },
+                { startSeconds: 60, amountGrams: 50 },
                 { startSeconds: 90, amountGrams: 50 }
               ]
             },
@@ -1504,11 +1504,11 @@
       originalRecipeGroup.recipes = originalRecipeGroup.recipes.concat([
         Object.assign({}, hotRecipeGroup.recipes[0], {
           id: "built-in-sol2coffee-original-hot-clean-acidity",
-          name: "깔끔 산미 HOT (솔이커피)"
+          name: "무적 산미 HOT (솔이커피)"
         }),
         Object.assign({}, iceRecipeGroup.recipes[0], {
           id: "built-in-sol2coffee-original-ice-clean-acidity",
-          name: "깔끔 산미 ICE (솔이커피)"
+          name: "무적 산미 ICE (솔이커피)"
         }),
         Object.assign({}, hotRecipeGroup.recipes[1], {
           id: "built-in-sol2coffee-original-hot-strong-sweetness",
